@@ -9,18 +9,27 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nostr-dev-kit/ndk": "^2.8.2",
+    "@nostr-dev-kit/ndk-cache-redis": "^2.1.14",
+    "@nostr-ts/common": "^0.0.5",
+    "@nostr-ts/node": "^0.0.5",
+    "@nostr-ts/web": "^0.0.5",
+    "dotenv": "^16.4.5",
+    "moment": "^2.30.1",
+    "next": "14.2.4",
+    "nostr-hooks": "^2.6.4",
+    "nostr-tools": "^2.7.0",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.4"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.4",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.4"
+    "typescript": "^5"
   }
 }
