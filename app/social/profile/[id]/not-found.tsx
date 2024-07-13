@@ -1,7 +1,7 @@
 import Link from 'next/link';
 //import { FaceFrownIcon } from '@heroicons/react/24/outline';
  
-export default function NotFound() {console.log("a")
+export default function NotFound() {
   return (
     <main className="flex h-full flex-col items-center justify-center gap-2">
       {/*<FaceFrownIcon className="w-10 text-gray-400" />*/}:C

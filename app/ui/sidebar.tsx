@@ -1,19 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { GetProfile } from "@/app/lib/nostr";
-import { Profile } from "@/app/lib/definitions";
+import {
+  GetProfile,
+  GetCurrentAccount,
+  LogOut,
+  GetRelays,
+  GetReactions,
+  GetPostById,
+  GetComments,
+} from "@/app/lib/nostr";
+import { Profile, Relay } from "@/app/lib/definitions";
+import Link from "next/link";
+import SignIn from "@/app/ui/signIn";
 
 export default function Sidebar() {
   const [user, setUser] = useState<Profile>();
 
   useEffect(() => {
     let fetch = async () => {
-      setUser(
-        await GetProfile(
-          "f13c62c272f9a34a55882255a5b4ab3992ad1be8a523c6666a50c511bab5480e"
-        )
+      let currentAccount = GetCurrentAccount();
+      await GetProfile(currentAccount ? currentAccount.pubkey : "", setUser);
+    };
+    fetch();
+  }, [GetCurrentAccount()]);
+
+  const [relays, setRelays] = useState<Relay[]>();
+  useEffect(() => {
+    let fetch = async () => {
+      let currentAccount = GetCurrentAccount();
+      let userrelays = await GetRelays(
+        currentAccount ? currentAccount.pubkey : ""
       );
+      setRelays(userrelays);
     };
     fetch();
   }, []);
@@ -81,15 +100,29 @@ export default function Sidebar() {
                   </div>
                 </div>
               )}
-              <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
-                New Post
-              </div>
             </div>
           </div>
           <div className="mt-5">
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
-              Home
-            </div>
+            {!GetCurrentAccount() ? (
+              <Link
+                className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+                href="/SignIn"
+              >
+                Sign In
+              </Link>
+            ) : null}
+            <Link
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/social/"
+            >
+              Feed
+            </Link>
+            <Link
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/social/profile"
+            >
+              Profile
+            </Link>
             <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
               Messages
             </div>
@@ -97,14 +130,16 @@ export default function Sidebar() {
               Notifications
             </div>
             <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
-              Relays
-            </div>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
               Settings
             </div>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
-              Log Out
-            </div>
+            {GetCurrentAccount() ? (
+              <div
+                className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+                onClick={() => LogOut()}
+              >
+                Log Out
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

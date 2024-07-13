@@ -8,25 +8,20 @@ import {
   GetPostById,
   GetReactions,
   GetComments,
-  GetCurrentAccount,
   LeaveLike,
+  GetCurrentAccount,
 } from "@/app/lib/nostr";
 import Link from "next/link";
+import CommentCard from "@/app/ui/comment";
+import PostForm from "@/app/ui/postForm";
 
-export default function PostCard({
-  id,
-}: //post,
-//defaultUser,
-{
-  id: string;
-  //post: Post | undefined;
-  //defaultUser?: Profile | undefined;
-}) {
+export default function PostPage({ id }: { id: string }) {
   const [post, setPost] = useState<Post>();
   const [reactions, setReactions] = useState<Reaction[]>();
   const [comments, setComments] = useState<Comment[]>();
   type ReactionCnt = { type: string; count: number; emoji: string | undefined };
   const [countedReactions, setCountedReactions] = useState<ReactionCnt[]>();
+  const [replyFormActive, setReplyFormActive] = useState<boolean>(false);
   useEffect(() => {
     let fetch = async () => {
       setPost(await GetPostById(id));
@@ -35,7 +30,6 @@ export default function PostCard({
     };
     fetch();
   }, []);
-
   useEffect(() => {
     setCountedReactions(
       reactions
@@ -51,7 +45,7 @@ export default function PostCard({
   }, [reactions]);
 
   return (
-    <div className="bg-slate-800 p-8 rounded-lg shadow-md my-4">
+    <div className="bg-slate-800 p-8 shadow-md my-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <img
@@ -67,15 +61,12 @@ export default function PostCard({
               {post?.authorName}
             </Link>
             <br />
-            <Link
-              href={`/social/post/${id}`}
-              className="group relative inline-block text-slate-400 text-sm duration-300"
-            >
+            <p className="group relative inline-block text-slate-400 text-sm duration-300">
               {moment.unix(post?.createdAt as number).fromNow()}
               <span className="absolute hidden group-hover:flex -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-slate-700 rounded-lg text-center text-slate-300 text-sm after:content-[''] after:absolute after:left-1/2 after:top-[100%] after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700">
                 {moment.unix(post?.createdAt as number).toLocaleString()}
               </span>
-            </Link>
+            </p>
           </div>
         </div>
         <div className="text-gray-500 cursor-pointer">
@@ -118,22 +109,23 @@ export default function PostCard({
       </div>
       <div className="mb-4">
         {/*<img
-          src="/postimage.png"
-          alt="Post Image"
-          className="object-scale-down rounded-md"
-        />*/}
+            src="/postimage.png"
+            alt="Post Image"
+            className="object-scale-down rounded-md"
+          />*/}
       </div>
-      <div className="flex items-center justify-between text-slate-500">
-        <div className="group relative inline-block duration-300">
-          <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between">
+        <div
+          className={`group relative inline-block duration-300 ${
+            reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
+              ?.length
+              ? "text-slate-300"
+              : "text-slate-500"
+          }`}
+        >
+          <div className="flex items-center space-x-2 ">
             <button
-              className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 ${
-                reactions?.filter(
-                  (r) => r.userId === GetCurrentAccount()?.pubkey
-                )?.length
-                  ? "text-slate-300"
-                  : "text-slate-500"
-              } rounded-full p-1`}
+              className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1"
               onClick={() =>
                 LeaveLike(
                   "❤️",
@@ -168,9 +160,9 @@ export default function PostCard({
             </span>
           ) : null}
         </div>
-        <Link
-          href={`/social/post/${post?.id}`}
-          className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1"
+        <button
+          className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1 text-slate-500"
+          onClick={() => setReplyFormActive(!replyFormActive)}
         >
           <svg
             width="22px"
@@ -194,7 +186,27 @@ export default function PostCard({
             </g>
           </svg>
           <span>{comments ? comments.length : 0}</span>
-        </Link>
+        </button>
+      </div>
+      <hr className="mt-2 mb-2" />
+      <p className="text-slate-300 font-semibold">Comments</p>
+      {replyFormActive ? (
+        <PostForm
+          type="Comment"
+          commentAttributes={{
+            root: post?.id as string,
+            reply: "",
+            replyTo: post?.authorId as string,
+          }}
+        />
+      ) : null}
+      <hr className="mt-2 mb-2" />
+      <div className="mt-4">
+        {comments
+          ?.filter((c) => !c.reply || c.reply === c.root)
+          .map((c) => (
+            <CommentCard comment={c} commentList={comments} key={c.postId} />
+          ))}
       </div>
     </div>
   );

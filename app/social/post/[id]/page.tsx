@@ -1,8 +1,10 @@
+"use client";
+
 import { notFound } from "next/navigation";
-import Profile from "@/app/ui/profile";
+import PostPage from "@/app/ui/postPage";
 import Breadcrumbs from "@/app/ui/Breadcrumbs";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Post({ params }: { params: { id: string, pid:string } }) {
   // if (!false) {
   //     notFound();
   // }
@@ -14,12 +16,17 @@ export default function Page({ params }: { params: { id: string } }) {
           { label: 'Social', href: '/social' },
           {
             label: 'Profile',
-            href: `/social/profile/${params.id}`,
+            href: `/social/profile/${params.pid}`,
+            active: true,
+          },
+          {
+            label: 'Post',
+            href: `/social/post/${params.id}`,
             active: true,
           },
         ]}
       />
-      <Profile id={params.id} />
+      <PostPage id={params.id} />
     </div>
   );
 }

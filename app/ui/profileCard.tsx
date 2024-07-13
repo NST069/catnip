@@ -1,37 +1,67 @@
 import { useState, useEffect } from "react";
 
 import { Profile } from "@/app/lib/definitions";
-import { GetFollows } from "@/app/lib/nostr";
+import { GetProfile, GetFollows } from "@/app/lib/nostr";
 
 export default function ProfileCard({ user }: { user: Profile | undefined }) {
-  const [follows, setFollows] = useState<string[]>();
-
-  useEffect(() => {
-    let fetch = async () => {
-      setFollows(await GetFollows(user?.id as string));
-    };
-    fetch();
-  }, [user]);
 
   return (
     <div>
       {user ? (
         <div className="border-b-4 border-slate-900">
-          <div className="">
-            <img
-              className="object-cover object-top"
-              src={user?.banner}
-              alt={user?.name + " banner"}
-            />
-          </div>
-          <div className="flex flex-row">
-            <div className="mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden flex-shrink-0">
+          {user.banner ? (
+            <div className="">
               <img
-                className="object-cover object-center h-64"
-                src={user?.picture}
-                alt={user?.name}
+                className="object-cover object-top"
+                src={user?.banner}
+                alt={user?.name + " banner"}
               />
             </div>
+          ) : (
+            <div className="grid w-full h-60 bg-slate-800 place-items-center flex-shrink-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-24 h-24 text-slate-500"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                ></path>
+              </svg>
+            </div>
+          )}
+          <div className="flex flex-row">
+            {user.picture ? (
+              <div className="mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden flex-shrink-0">
+                <img
+                  className="object-cover object-center h-64"
+                  src={user?.picture}
+                  alt={user?.name}
+                />
+              </div>
+            ) : (
+              <div className="grid bg-slate-800 mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden place-items-center flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-12 h-12 text-slate-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                  ></path>
+                </svg>
+              </div>
+            )}
             <div className="flex justify-between py-4">
               <div className="p-5 text-slate-500">
                 <div className="flex items-start">
@@ -50,9 +80,6 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
               </div>
             </div>
           </div>
-          <p className="my-2 mx-10 text-sm text-slate-400">
-            Follows: {follows ? follows?.length : 0}
-          </p>
         </div>
       ) : (
         <div className="border-b-4 border-slate-900 animate-pulse">
@@ -102,25 +129,6 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
             </div>
           </div>
         </div>
-        /*<div className="border-b-4 border-slate-900 animate-pulse">
-
-          <div className="mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden flex-shrink-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="w-6 h-6 text-slate-500"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-              ></path>
-            </svg>
-          </div>
-        </div>*/
       )}
     </div>
   );

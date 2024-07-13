@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { GetFeed } from "@/app/lib/nostr";
+import { GetFeed, GetFollows, GetCurrentAccount } from "@/app/lib/nostr";
 import { Post } from "@/app/lib/definitions";
 import PostCard from "@/app/ui/postCard";
 
@@ -14,7 +14,8 @@ export default function Feed() {
     let fetch = async () => {
       setPosts([]);
       if (scope === "Follows") {
-        let follows: string[] = [];
+        let currentAccount = GetCurrentAccount();
+        let follows: string[] = currentAccount?(await GetFollows(currentAccount.pubkey) as string[]):[];
         //get follows from logged user
         await GetFeed(posts, setPosts, follows);
       } else await GetFeed(posts, setPosts);
@@ -44,7 +45,7 @@ export default function Feed() {
       </div>
       <div className="px-9">
         {posts?.map((el, ind) => {
-          return <PostCard post={el} key={el.id} />;
+          return <PostCard id={el.id as string} key={el.id} />;
         })}
       </div>
     </main>
