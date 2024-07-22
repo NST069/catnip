@@ -21,6 +21,7 @@ export default function Posts({ pubkey }: { pubkey: string }) {
 
   useEffect(() => {
     updatePosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pubkey]);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function Posts({ pubkey }: { pubkey: string }) {
       setUpdate(!update);
     }, 300000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [update]);
 
   return (

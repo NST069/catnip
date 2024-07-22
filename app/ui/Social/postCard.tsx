@@ -13,6 +13,7 @@ import {
 } from "@/app/lib/nostr";
 import Link from "next/link";
 import { nip19 } from "nostr-tools";
+import Image from "next/image";
 
 export default function PostCard({ initialPost }: { initialPost: Post }) {
   const [post, setPost] = useState<Post>();
@@ -34,6 +35,7 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
   // }, []);
   useEffect(() => {
     setPost(initialPost);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   let updatePost = async () => {
@@ -51,6 +53,7 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
       setUpdate(!update);
     }, 60000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [update]);
 
   useEffect(() => {

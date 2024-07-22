@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
 import { Profile } from "@/app/lib/definitions";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Sidebar() {
   const [user, setUser] = useState<Profile>();
@@ -20,6 +21,7 @@ export default function Sidebar() {
       setUpdate(!update);
     }, 5000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [update]);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function Sidebar() {
                 <div className="flex items-center gap-4 mx-4">
                   <img
                     className="w-12 h-12 rounded-full"
-                    src={user?.picture}
+                    src={user?.picture as string}
                     alt=""
                   />
 

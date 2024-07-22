@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Profile } from "@/app/lib/definitions";
 import { GetProfile, GetFollows } from "@/app/lib/nostr";
+import Image from "next/image";
 
 export default function ProfileCard({ user }: { user: Profile | undefined }) {
 
@@ -41,7 +42,7 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
                 <img
                   className="object-cover object-center h-64"
                   src={user?.picture}
-                  alt={user?.name}
+                  alt={user?.name as string}
                 />
               </div>
             ) : (

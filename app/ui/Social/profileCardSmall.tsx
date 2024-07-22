@@ -4,6 +4,7 @@ import Link from "next/link";
 import { GetProfile } from "@/app/lib/nostr";
 import { Profile } from "@/app/lib/definitions";
 import { nip19 } from "nostr-tools";
+import Image from "next/image";
 
 export default function ProfileCardSmall({ id }: { id: string }) {
   const [user, setUser] = useState<Profile>();
@@ -13,6 +14,7 @@ export default function ProfileCardSmall({ id }: { id: string }) {
       if (!user) await GetProfile(id, setUser);
     };
     fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -24,7 +26,7 @@ export default function ProfileCardSmall({ id }: { id: string }) {
             pubkey: user.id,
           } as nip19.ProfilePointer)}`}
         >
-          <img className="w-16 h-16 rounded-full" src={user?.picture} alt="" />
+          <img className="w-16 h-16 rounded-full" src={user?.picture as string} alt="Profile Picture" />
 
           <div className="font-medium">
             <div>{user?.name}</div>

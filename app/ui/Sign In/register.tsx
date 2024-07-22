@@ -5,6 +5,7 @@ import { SignIn_nSec, defaultRelays, UpdateProfile, UpdateRelays } from "@/app/l
 import { generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import Redirect from "@/app/lib/redirect";
+import Image from "next/image";
 
 export default function Register() {
   const [nSec, setNSec] = useState<string>("");
@@ -24,10 +25,11 @@ export default function Register() {
     setNSec(nip19.nsecEncode(hex));
     setNpub(nip19.npubEncode(pubkey));
     setShow(true);
-  }, [setHexKey, setNSec, setShow, nSec]);
+  }, [setHexKey, setNSec, setShow]);
 
   useEffect(() => {
     generateNewKey();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

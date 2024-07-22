@@ -42,6 +42,7 @@ export default function ProfilePage({ id }: { id: string | undefined }) {
       );
     };
     fetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -14,6 +14,7 @@ import {
 import PostForm from "@/app/ui/Social/postForm";
 import Link from "next/link";
 import { nip19 } from "nostr-tools";
+import Image from "next/image";
 
 export default function CommentCard({
   comment,
@@ -40,11 +41,13 @@ export default function CommentCard({
       setUpdate(!update);
     }, 60000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [update]);
 
   useEffect(() => {
     setPost(comment);
     updateComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -53,7 +56,7 @@ export default function CommentCard({
         <img
           className="object-cover w-12 h-12 border-2 border-slate-900 rounded-full"
           alt={post?.authorName + " avatar"}
-          src={post?.authorAvatar}
+          src={post?.authorAvatar as string}
         />
         <div className="flex-col mt-1">
           <Link

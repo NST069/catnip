@@ -7,8 +7,8 @@ export default function Follows({
 }) {
   return (
     <div>
-      {follows?.map((p) => (
-        <ProfileCardSmall id={p}/>
+      {follows?.map((p, ind) => (
+        <ProfileCardSmall id={p} key={ind}/>
       ))}
     </div>
   );

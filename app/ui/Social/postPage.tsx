@@ -15,6 +15,7 @@ import Link from "next/link";
 import CommentCard from "@/app/ui/Social/comment";
 import PostForm from "@/app/ui/Social/postForm";
 import { nip19 } from "nostr-tools";
+import Image from "next/image";
 
 export default function PostPage({ id }: { id: string }) {
   const [post, setPost] = useState<Post>();
@@ -37,10 +38,12 @@ export default function PostPage({ id }: { id: string }) {
       setUpdate(!update);
     }, 60000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [update]);
 
   useEffect(() => {
     updatePost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export default function PostPage({ id }: { id: string }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <img
-            src={post?.authorAvatar}
+            src={post?.authorAvatar as string}
             alt={post?.authorName + "Avatar"}
             className="w-8 h-8 rounded-full"
           />

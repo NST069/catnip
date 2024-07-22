@@ -3,8 +3,8 @@ import { Relay } from "@/app/lib/definitions";
 export default function Relays({ relays }: { relays: Relay[] | undefined }) {
   return (
     <div>
-      {relays?.map((r) => (
-        <div className="flex flex-row items-start text-slate-500 h-10">
+      {relays?.map((r, ind) => (
+        <div className="flex flex-row items-start text-slate-500 h-10" key={ind}>
           <div className="flex-1 h-full">{r.address}</div>
           <div
             className={`w-2 h-2 m-4 ${

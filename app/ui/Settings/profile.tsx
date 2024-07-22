@@ -8,6 +8,7 @@ import {
   UpdateProfile,
   GetNSec,
 } from "@/app/lib/nostr";
+import Image from "next/image";
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<Profile>();
