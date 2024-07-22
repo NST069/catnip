@@ -8,28 +8,51 @@ import {
   GetPostById,
   GetReactions,
   GetComments,
-  LeaveLike,
   GetCurrentAccount,
+  LeaveLike,
 } from "@/app/lib/nostr";
 import Link from "next/link";
-import CommentCard from "@/app/ui/comment";
-import PostForm from "@/app/ui/postForm";
+import { nip19 } from "nostr-tools";
 
-export default function PostPage({ id }: { id: string }) {
+export default function PostCard({ initialPost }: { initialPost: Post }) {
   const [post, setPost] = useState<Post>();
+  const [profile, setProfile] = useState<Profile>();
   const [reactions, setReactions] = useState<Reaction[]>();
   const [comments, setComments] = useState<Comment[]>();
+  const [update, setUpdate] = useState<boolean>(true);
   type ReactionCnt = { type: string; count: number; emoji: string | undefined };
   const [countedReactions, setCountedReactions] = useState<ReactionCnt[]>();
-  const [replyFormActive, setReplyFormActive] = useState<boolean>(false);
+  // useEffect(() => {
+  //   let fetch = async () => {
+  //     setPost(initialPost);
+  //     await GetProfile(post?.authorId as string, setProfile);
+  //     setReactions(await GetReactions(post?.id as string));
+  //     setComments(await GetComments(post?.id as string));
+
+  //   };
+  //   fetch();
+  // }, []);
   useEffect(() => {
-    let fetch = async () => {
-      setPost(await GetPostById(id));
-      setReactions(await GetReactions(id));
-      setComments(await GetComments(id));
-    };
-    fetch();
+    setPost(initialPost);
   }, []);
+
+  let updatePost = async () => {
+    if (post) {
+      setPost(await GetPostById(post.id as string));
+      await GetProfile(post?.authorId as string, setProfile);
+      setReactions(await GetReactions(post?.id as string));
+      setComments(await GetComments(post?.id as string));
+    }
+  };
+
+  useEffect(() => {
+    const id = setInterval(async () => {
+      await updatePost();
+      setUpdate(!update);
+    }, 60000);
+    return () => clearInterval(id);
+  }, [update]);
+
   useEffect(() => {
     setCountedReactions(
       reactions
@@ -45,28 +68,37 @@ export default function PostPage({ id }: { id: string }) {
   }, [reactions]);
 
   return (
-    <div className="bg-slate-800 p-8 shadow-md my-4">
+    <div className="bg-slate-800 p-8 rounded-lg shadow-md my-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <img
-            src={post?.authorAvatar}
-            alt={post?.authorName + "Avatar"}
-            className="w-8 h-8 rounded-full"
-          />
+          {profile?.picture ? (
+            <img
+              src={profile?.picture}
+              alt={profile?.name + "Avatar"}
+              className="w-8 h-8 rounded-full"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-700" />
+          )}
           <div>
             <Link
-              href={`/social/profile/${post?.authorId}`}
+              href={post?.authorId?`/profile/${nip19.nprofileEncode({
+                pubkey: post?.authorId,
+              } as nip19.ProfilePointer)}`:"#"}
               className="text-slate-200 font-semibold"
             >
-              {post?.authorName}
+              {profile ? profile.name : "Anonymous"}
             </Link>
             <br />
-            <p className="group relative inline-block text-slate-400 text-sm duration-300">
+            <Link
+              href={post?.id?`/post/${nip19.noteEncode(post?.id as string)}`:"#"}
+              className="group relative inline-block text-slate-400 text-sm duration-300"
+            >
               {moment.unix(post?.createdAt as number).fromNow()}
               <span className="absolute hidden group-hover:flex -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-slate-700 rounded-lg text-center text-slate-300 text-sm after:content-[''] after:absolute after:left-1/2 after:top-[100%] after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700">
                 {moment.unix(post?.createdAt as number).toLocaleString()}
               </span>
-            </p>
+            </Link>
           </div>
         </div>
         <div className="text-gray-500 cursor-pointer">
@@ -109,31 +141,31 @@ export default function PostPage({ id }: { id: string }) {
       </div>
       <div className="mb-4">
         {/*<img
-            src="/postimage.png"
-            alt="Post Image"
-            className="object-scale-down rounded-md"
-          />*/}
+          src="/postimage.png"
+          alt="Post Image"
+          className="object-scale-down rounded-md"
+        />*/}
       </div>
-      <div className="flex items-center justify-between">
-        <div
-          className={`group relative inline-block duration-300 ${
-            reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
-              ?.length
-              ? "text-slate-300"
-              : "text-slate-500"
-          }`}
-        >
-          <div className="flex items-center space-x-2 ">
+      <div className="flex items-center justify-between text-slate-500">
+        <div className="group relative inline-block duration-300">
+          <div className="flex items-center space-x-2">
             <button
-              className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1"
-              onClick={() =>
-                LeaveLike(
+              className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 ${
+                reactions?.filter(
+                  (r) => r.userId === GetCurrentAccount()?.pubkey
+                )?.length
+                  ? "text-slate-300"
+                  : "text-slate-500"
+              } rounded-full p-1`}
+              onClick={async () => {
+                await LeaveLike(
                   "❤️",
                   post?.id as string,
                   post?.authorId as string,
                   "1"
-                )
-              }
+                );
+                updatePost();
+              }}
             >
               <svg
                 className="w-5 h-5 fill-current"
@@ -147,8 +179,8 @@ export default function PostPage({ id }: { id: string }) {
           </div>
           {reactions ? (
             <span className="absolute hidden group-hover:flex -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-slate-700 rounded-lg text-center text-slate-300 text-sm after:content-[''] after:absolute after:left-1/2 after:top-[100%] after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700">
-              {countedReactions?.map((r) => (
-                <span className="flex flex-row">
+              {countedReactions?.map((r, ind) => (
+                <span className="flex flex-row" key={ind}>
                   {r.emoji ? (
                     <img className="h-4 w-4" src={r.emoji} alt={r.type} />
                   ) : (
@@ -160,9 +192,9 @@ export default function PostPage({ id }: { id: string }) {
             </span>
           ) : null}
         </div>
-        <button
-          className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1 text-slate-500"
-          onClick={() => setReplyFormActive(!replyFormActive)}
+        <Link
+          href={post?.id?`/post/${nip19.noteEncode(post?.id as string)}`:"#"}
+          className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1"
         >
           <svg
             width="22px"
@@ -186,27 +218,7 @@ export default function PostPage({ id }: { id: string }) {
             </g>
           </svg>
           <span>{comments ? comments.length : 0}</span>
-        </button>
-      </div>
-      <hr className="mt-2 mb-2" />
-      <p className="text-slate-300 font-semibold">Comments</p>
-      {replyFormActive ? (
-        <PostForm
-          type="Comment"
-          commentAttributes={{
-            root: post?.id as string,
-            reply: "",
-            replyTo: post?.authorId as string,
-          }}
-        />
-      ) : null}
-      <hr className="mt-2 mb-2" />
-      <div className="mt-4">
-        {comments
-          ?.filter((c) => !c.reply || c.reply === c.root)
-          .map((c) => (
-            <CommentCard comment={c} commentList={comments} key={c.postId} />
-          ))}
+        </Link>
       </div>
     </div>
   );

@@ -1,40 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  GetProfile,
-  GetCurrentAccount,
-  LogOut,
-  GetRelays,
-  GetReactions,
-  GetPostById,
-  GetComments,
-} from "@/app/lib/nostr";
-import { Profile, Relay } from "@/app/lib/definitions";
+import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
+import { Profile } from "@/app/lib/definitions";
 import Link from "next/link";
-import SignIn from "@/app/ui/signIn";
 
 export default function Sidebar() {
   const [user, setUser] = useState<Profile>();
+  const [update, setUpdate] = useState<boolean>(true);
+
+  let updateSidebar = async () => {
+    let currentAccount = GetCurrentAccount();
+    await GetProfile(currentAccount ? currentAccount.pubkey : "", setUser);
+  };
 
   useEffect(() => {
-    let fetch = async () => {
-      let currentAccount = GetCurrentAccount();
-      await GetProfile(currentAccount ? currentAccount.pubkey : "", setUser);
-    };
-    fetch();
-  }, [GetCurrentAccount()]);
+    const id = setInterval(async () => {
+      if (user?.id !== GetCurrentAccount()?.pubkey) await updateSidebar();
+      setUpdate(!update);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [update]);
 
-  const [relays, setRelays] = useState<Relay[]>();
   useEffect(() => {
-    let fetch = async () => {
-      let currentAccount = GetCurrentAccount();
-      let userrelays = await GetRelays(
-        currentAccount ? currentAccount.pubkey : ""
-      );
-      setRelays(userrelays);
-    };
-    fetch();
+    updateSidebar();
   }, []);
 
   return (
@@ -95,47 +84,53 @@ export default function Sidebar() {
                     </svg>
                   </div>
                   <div className="flex-grow w-full">
-                    <h1 className="w-3/5 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></h1>
-                    <p className="w-auto h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+                    <h1 className="w-3/5 h-2 mt-4 bg-slate-200 rounded-lg dark:bg-slate-700"></h1>
+                    <p className="w-auto h-2 mt-4 bg-slate-200 rounded-lg dark:bg-slate-700"></p>
                   </div>
                 </div>
               )}
             </div>
           </div>
           <div className="mt-5">
-            {!GetCurrentAccount() ? (
+            {!user ? (
               <Link
                 className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-                href="/SignIn"
+                href="/signin"
               >
                 Sign In
               </Link>
             ) : null}
             <Link
               className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/social/"
+              href="/feed"
             >
               Feed
             </Link>
             <Link
               className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/social/profile"
+              href="/profile"
             >
               Profile
             </Link>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
+            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600">
               Messages
             </div>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
+            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600">
               Notifications
             </div>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3">
+            <Link
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/settings"
+            >
               Settings
-            </div>
-            {GetCurrentAccount() ? (
+            </Link>
+            {user ? (
               <div
                 className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-                onClick={() => LogOut()}
+                onClick={() => {
+                  LogOut();
+                  updateSidebar();
+                }}
               >
                 Log Out
               </div>

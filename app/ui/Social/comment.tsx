@@ -7,9 +7,13 @@ import {
   GetProfile,
   GetPostById,
   GetReactions,
-  GetComments, LeaveLike
+  GetComments,
+  LeaveLike,
+  GetCurrentAccount,
 } from "@/app/lib/nostr";
-import PostForm from "@/app/ui/postForm";
+import PostForm from "@/app/ui/Social/postForm";
+import Link from "next/link";
+import { nip19 } from "nostr-tools";
 
 export default function CommentCard({
   comment,
@@ -22,14 +26,25 @@ export default function CommentCard({
   const [children, setChildren] = useState<Comment[]>();
   const [reactions, setReactions] = useState<Reaction[]>();
   const [replyFormActive, setReplyFormActive] = useState<boolean>(false);
+  const [update, setUpdate] = useState<boolean>(true);
+
+  let updateComments = async () => {
+    setPost(await GetPostById(comment.postId));
+    setReactions(await GetReactions(comment.postId));
+    setChildren(commentList.filter((c) => c.reply == comment.postId));
+  };
 
   useEffect(() => {
-    let fetch = async () => {
-      setPost(await GetPostById(comment.postId));
-      setReactions(await GetReactions(comment.postId));
-      setChildren(commentList.filter((c) => c.reply == comment.postId));
-    };
-    fetch();
+    const id = setInterval(async () => {
+      await updateComments();
+      setUpdate(!update);
+    }, 60000);
+    return () => clearInterval(id);
+  }, [update]);
+
+  useEffect(() => {
+    setPost(comment);
+    updateComments();
   }, []);
 
   return (
@@ -41,7 +56,16 @@ export default function CommentCard({
           src={post?.authorAvatar}
         />
         <div className="flex-col mt-1">
-          <div className="flex items-center flex-1 px-4 font-bold leading-tight">
+          <Link
+            href={
+              post?.authorId
+                ? `/profile/${nip19.nprofileEncode({
+                    pubkey: post?.authorId,
+                  } as nip19.ProfilePointer)}`
+                : "#"
+            }
+            className="flex items-center flex-1 px-4 font-bold leading-tight"
+          >
             {post?.authorName}
             <span className="group relative inline-block ml-2 text-xs font-normal text-slate-400 duration-300">
               {moment.unix(post?.createdAt as number).fromNow()}
@@ -49,7 +73,7 @@ export default function CommentCard({
                 {moment.unix(post?.createdAt as number).toLocaleString()}
               </span>
             </span>
-          </div>
+          </Link>
           <div className="flex-1 px-2 ml-2 text-sm font-medium leading-loose text-slate-300">
             {post?.content}
           </div>
@@ -58,7 +82,9 @@ export default function CommentCard({
             onClick={() => setReplyFormActive(!replyFormActive)}
           >
             <svg
-              className="w-5 h-5 ml-2 text-slate-600 cursor-pointer fill-current hover:text-slate-400"
+              className={`w-5 h-5 ml-2 ${
+                replyFormActive ? "text-slate-400" : "text-slate-600"
+              } cursor-pointer fill-current hover:text-slate-400`}
               viewBox="0 0 95 78"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -68,9 +94,25 @@ export default function CommentCard({
               />
             </svg>
           </button>
-          <button className="inline-flex items-center px-1 -ml-1 flex-column text-slate-500" onClick={()=>LeaveLike("❤️", post?.id as string, post?.authorId as string, "1")}>
+          <button
+            className={`inline-flex items-center px-1 -ml-1 flex-column ${
+              reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
+                ?.length
+                ? "text-slate-300"
+                : "text-slate-500"
+            }`}
+            onClick={async () => {
+              await LeaveLike(
+                "❤️",
+                post?.id as string,
+                post?.authorId as string,
+                "1"
+              );
+              updateComments();
+            }}
+          >
             <svg
-              className="w-5 h-5 text-slate-600 cursor-pointer hover:text-slate-400"
+              className="w-5 h-5 cursor-pointer hover:text-slate-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -87,10 +129,23 @@ export default function CommentCard({
           </button>
         </div>
       </div>
-      {replyFormActive?<PostForm type="Comment" commentAttributes={{root:comment.root as string, reply:post?.id as string, replyTo:post?.authorId as string}}/>:null}
+      {replyFormActive ? (
+        <PostForm
+          type="Comment"
+          updatePosts={async () => {
+            updateComments();
+            setReplyFormActive(false);
+          }}
+          commentAttributes={{
+            root: comment.root as string,
+            reply: post?.id as string,
+            replyTo: post?.authorId as string,
+          }}
+        />
+      ) : null}
       <hr className="my-2 ml-16 border-slate-700" />
       {children ? (
-        <div className="flex flex-row pt-1 ml-4">
+        <div className="flex flex-col pt-1 ml-4">
           {children.map((c) => (
             <CommentCard comment={c} commentList={commentList} key={c.postId} />
           ))}

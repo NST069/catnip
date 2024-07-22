@@ -1,7 +1,7 @@
 export type Profile = {
   //kind 0
-  id?: string;
-  npub?: string;
+  id: string;
+  npub: string;
   banner?: string;
   displayName?: string;
   picture?: string;
@@ -22,7 +22,6 @@ type CommonAccount = {
   export type LocalAccount = CommonAccount & {
     type: "local";
     readonly: false;
-    secKey?: ArrayBuffer;
     iv?: Uint8Array;
     nSec:string;
   };

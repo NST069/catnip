@@ -1,4 +1,4 @@
-import Feed from "@/app/ui/feed";
+import Feed from "@/app/ui/Social/feed";
 
 export default async function Page() {
   return <Feed />;

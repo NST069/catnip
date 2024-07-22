@@ -3,13 +3,14 @@ import Link from "next/link";
 
 import { GetProfile } from "@/app/lib/nostr";
 import { Profile } from "@/app/lib/definitions";
+import { nip19 } from "nostr-tools";
 
 export default function ProfileCardSmall({ id }: { id: string }) {
   const [user, setUser] = useState<Profile>();
 
   useEffect(() => {
     let fetch = async () => {
-        if(!user) await GetProfile(id, setUser)
+      if (!user) await GetProfile(id, setUser);
     };
     fetch();
   }, []);
@@ -18,9 +19,11 @@ export default function ProfileCardSmall({ id }: { id: string }) {
     <div className="flex flex-col items-start text-slate-500">
       {user ? (
         <Link
-        className="flex items-center gap-4 ml-12"
-        href={`/social/profile/${user.id}`}
-      >
+          className="flex items-center gap-4 ml-12"
+          href={`/profile/${nip19.nprofileEncode({
+            pubkey: user.id,
+          } as nip19.ProfilePointer)}`}
+        >
           <img className="w-16 h-16 rounded-full" src={user?.picture} alt="" />
 
           <div className="font-medium">

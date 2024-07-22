@@ -9,21 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@nextui-org/modal": "^2.0.36",
-    "@nextui-org/react": "^2.4.2",
     "@noble/hashes": "^1.4.0",
-    "@nostr-dev-kit/ndk": "^2.8.2",
-    "@nostr-dev-kit/ndk-cache-redis": "^2.1.14",
-    "@nostr-ts/common": "^0.0.5",
-    "@nostr-ts/node": "^0.0.5",
-    "@nostr-ts/web": "^0.0.5",
     "dotenv": "^16.4.5",
     "moment": "^2.30.1",
     "next": "14.2.4",
-    "nostr-hooks": "^2.6.4",
     "nostr-tools": "^2.7.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "simple-crypto-js": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",

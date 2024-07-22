@@ -1,6 +1,4 @@
-import Image from "next/image";
-
-export default async function Home() {
+export default function Social({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col flex-grow">
       <div className="flex items-center flex-shrink-0 h-16 border-b border-slate-800 bg-slate-700 px-4">
@@ -33,11 +31,7 @@ export default async function Home() {
         </form>
         {/* </div> */}
       </div>
-      {/* <div className="flex-1 overflow-y-scroll">{children}</div> */}
-      <div className="flex grow flex-col items-center justify-center bg-slate-950 text-slate-200">
-        <h1 className="font-bold text-2xl">Welcome to Catnip</h1>
-        <img className="block h-64 w-auto" src="/logo.png" />
-      </div>
+      <div className="flex-1 overflow-y-scroll">{children}</div>
     </div>
   );
 }

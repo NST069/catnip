@@ -4,10 +4,12 @@ import { SubmitPost, SubmitComment } from "@/app/lib/nostr";
 
 export default function PostForm({
   type,
+  updatePosts,
   commentAttributes,
 }: {
   type: string;
-  commentAttributes?:{root:string, reply:string, replyTo:string};
+  updatePosts: () => Promise<void>;
+  commentAttributes?: { root: string; reply: string; replyTo: string };
 }) {
   const [content, setContent] = useState<string>("");
 
@@ -67,9 +69,20 @@ export default function PostForm({
         <div className="buttons flex justify-end">
           <div
             className="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-slate-200 ml-2 bg-indigo-500"
-            onClick={() => (type==="Comment" && commentAttributes)?SubmitComment(content, commentAttributes.root, commentAttributes.reply, commentAttributes.replyTo):SubmitPost(content)}
+            onClick={async () => {
+              type === "Comment" && commentAttributes
+                ? await SubmitComment(
+                    content,
+                    commentAttributes.root,
+                    commentAttributes.reply,
+                    commentAttributes.replyTo
+                  )
+                : await SubmitPost(content);
+              setContent("");
+              await updatePosts();
+            }}
           >
-            {type==="Comment"?"Comment":"Post"}
+            {type === "Comment" ? "Comment" : "Post"}
           </div>
         </div>
       </div>

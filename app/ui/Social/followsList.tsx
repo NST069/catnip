@@ -1,4 +1,4 @@
-import ProfileCardSmall from "@/app/ui/profileCardSmall";
+import ProfileCardSmall from "@/app/ui/Social/profileCardSmall";
 
 export default function Follows({
   follows,

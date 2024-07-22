@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import { GetFeed, GetFollows, GetCurrentAccount } from "@/app/lib/nostr";
 import { Post } from "@/app/lib/definitions";
-import PostCard from "@/app/ui/postCard";
+import PostCard from "@/app/ui/Social/postCard";
 
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>();
@@ -17,8 +17,8 @@ export default function Feed() {
         let currentAccount = GetCurrentAccount();
         let follows: string[] = currentAccount?(await GetFollows(currentAccount.pubkey) as string[]):[];
         //get follows from logged user
-        await GetFeed(posts, setPosts, follows);
-      } else await GetFeed(posts, setPosts);
+        await GetFeed(setPosts, follows);
+      } else await GetFeed(setPosts);
     };
     fetch();
   }, [scope]);
@@ -45,7 +45,7 @@ export default function Feed() {
       </div>
       <div className="px-9">
         {posts?.map((el, ind) => {
-          return <PostCard id={el.id as string} key={el.id} />;
+          return <PostCard initialPost={el} key={el.id} />;
         })}
       </div>
     </main>
