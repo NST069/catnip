@@ -128,7 +128,7 @@ export async function GetProfile(
     setProfile ? setProfile(undefined) : null;
     return;
   }
-  
+
   let foundProfile = false;
   let h = pool.subscribeMany(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
@@ -212,6 +212,7 @@ export async function GetPostById(id: string): Promise<Post | undefined> {
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     { ids: [id] }
   );
+  if(events.length===0) return;
   let e = events[0];
   let p: Post = {};
   let authorEvt = await pool.querySync(
@@ -304,7 +305,12 @@ export async function GetFollows(
     ],
     {
       onevent(event) {
-        follows.push(...event.tags.filter((t) => t[0] == "p").map((t) => t[1]));
+        event.tags
+          .filter((t) => t[0] == "p")
+          .map((t) => t[1])
+          .forEach((t) => {
+            if (follows.indexOf(t) < 0) follows.push(t);
+          });
       },
       oneose() {
         h.close();
@@ -415,7 +421,7 @@ export function GetNSec(): string {
 
 async function SignAndPublishEvent(evt: EventTemplate) {
   let signedEvent: Event | undefined;
-  
+
   switch (CurrentAccount?.type) {
     case "local":
       let secKey = "";
@@ -431,7 +437,7 @@ async function SignAndPublishEvent(evt: EventTemplate) {
           return;
         }
       }
-      
+
       signedEvent = finalizeEvent(evt, hexToBytes(secKey)) as Event;
       break;
     case "extension":
@@ -441,7 +447,7 @@ async function SignAndPublishEvent(evt: EventTemplate) {
       console.log("Cannot find proper signer");
       return;
   }
-  
+
   await Promise.any(
     pool.publish(
       CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
@@ -496,7 +502,7 @@ export async function UpdateProfile(
     content: JSON.stringify(profile),
     created_at: Math.floor(Date.now() / 1000),
   };
-  
+
   SignAndPublishEvent(evtProfile);
 }
 
@@ -580,4 +586,50 @@ export async function LeaveLike(
       console.log("Post was already liked by you");
     }
   });
+}
+
+export async function CheckFollow(
+  pubkey: string,
+  setIsFollowed?: Dispatch<SetStateAction<boolean>>
+) {
+  if (!CurrentAccount || CurrentAccount.pubkey === pubkey) return;
+  let event = (
+    await pool.querySync(
+      CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+      {
+        authors: [CurrentAccount.pubkey],
+        kinds: [3],
+      }
+    )
+  )[0];
+  let res = event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0;
+  setIsFollowed ? setIsFollowed(res) : null;
+  return res;
+}
+
+export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
+  if (!CurrentAccount || CurrentAccount.pubkey === pubkey) return;
+  let event = (
+    await pool.querySync(
+      CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+      {
+        authors: [CurrentAccount.pubkey],
+        kinds: [3],
+      }
+    )
+  )[0];
+  let tags = event.tags;
+  if (tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0)
+    tags = tags.filter((t) => t[1] !== pubkey);
+  else tags.push(["p", pubkey]);
+  let fx = async () => {
+    let evtFollows: EventTemplate = {
+      kind: 3,
+      tags,
+      content: event.content,
+      created_at: Math.floor(Date.now() / 1000),
+    };
+    SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
+  };
+  fx();
 }
