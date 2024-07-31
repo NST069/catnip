@@ -1,19 +1,35 @@
 import { useState, useEffect } from "react";
 
 import { Profile } from "@/app/lib/definitions";
-import { GetProfile, GetFollows } from "@/app/lib/nostr";
+import {
+  GetProfile,
+  GetFollows,
+  ToggleFollowing,
+  CheckFollow,
+} from "@/app/lib/nostr";
 import Image from "next/image";
 
 export default function ProfileCard({ user }: { user: Profile | undefined }) {
+  const [npub, setNpub] = useState<string>("");
+  const [isFollowed, setIsFollowed] = useState<boolean>(false);
+
+  useEffect(() => {
+    setNpub(
+      user?.npub?.substring(0, 8) +
+        "..." +
+        user?.npub?.substring(user?.npub?.length - 8)
+    );
+    CheckFollow(user?.id as string, setIsFollowed);
+  }, [user]);
 
   return (
     <div>
       {user ? (
         <div className="border-b-4 border-slate-900">
           {user.banner ? (
-            <div className="">
+            <div className="w-full h-60 overflow-hidden">
               <img
-                className="object-cover object-top"
+                className="object-cover object-center"
                 src={user?.banner}
                 alt={user?.name + " banner"}
               />
@@ -63,7 +79,7 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
                 </svg>
               </div>
             )}
-            <div className="flex justify-between py-4">
+            <div className="flex flex-grow justify-between py-4">
               <div className="p-5 text-slate-500">
                 <div className="flex items-start">
                   <div className="text-sm">
@@ -71,13 +87,46 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
                       {user?.name}
                     </div>
                     <p>{user?.nip05}</p>
-                    <p>
-                      {user?.npub?.substring(0, 8) +
-                        "..." +
-                        user?.npub?.substring(user?.npub?.length - 8)}
+                    <p
+                      onMouseEnter={() => setNpub(user.npub)}
+                      onMouseLeave={() =>
+                        setNpub(
+                          user.npub.substring(0, 8) +
+                            "..." +
+                            user.npub.substring(user?.npub?.length - 8)
+                        )
+                      }
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {npub}
                     </p>
                   </div>
                 </div>
+              </div>
+              <div
+                className="inline-flex rounded-md shadow-sm m-5"
+                role="group"
+              >
+                <button
+                  onClick={async () => {
+                    await ToggleFollowing(user.id, () =>
+                      setIsFollowed(!isFollowed)
+                    );
+                  }}
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-800 hover:border-slate-700 rounded-s-lg"
+                >
+                  {isFollowed ? "Unfollow" : "Follow"}
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-800 hover:border-slate-700 rounded-e-lg"
+                >
+                  Message
+                </button>
               </div>
             </div>
           </div>
