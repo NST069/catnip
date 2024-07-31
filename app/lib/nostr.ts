@@ -305,7 +305,6 @@ export async function GetFollows(
     ],
     {
       onevent(event) {
-        console.log(event);
         event.tags
           .filter((t) => t[0] == "p")
           .map((t) => t[1])
@@ -619,15 +618,10 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
       }
     )
   )[0];
-  console.log(
-    event,
-    event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length
-  );
   let tags = event.tags;
   if (tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0)
     tags = tags.filter((t) => t[1] !== pubkey);
   else tags.push(["p", pubkey]);
-  console.log(tags, event);
   let fx = async () => {
     let evtFollows: EventTemplate = {
       kind: 3,
@@ -635,7 +629,6 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
       content: event.content,
       created_at: Math.floor(Date.now() / 1000),
     };
-    console.log(evtFollows);
     SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
   };
   fx();
