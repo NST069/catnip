@@ -19,12 +19,12 @@ type CommonAccount = {
   relays?: string[];
   //localSettings?: AppSettings; //profile configuration
 };
-  export type LocalAccount = CommonAccount & {
-    type: "local";
-    readonly: false;
-    iv?: Uint8Array;
-    nSec:string;
-  };
+export type LocalAccount = CommonAccount & {
+  type: "local";
+  readonly: false;
+  iv?: Uint8Array;
+  nSec: string;
+};
 //   export type PubkeyAccount = CommonAccount & {
 //     type: "pubkey";
 //     readonly: true;
@@ -47,6 +47,8 @@ export type ExtensionAccount = CommonAccount & {
 //     signerRelays: string[];
 //     readonly: false;
 //   };
+
+export type Account = ExtensionAccount | LocalAccount;
 
 export type Tag = {
   type: string;
@@ -74,13 +76,26 @@ export type Reaction = {
   content: string;
   createdAt: number;
   userId: string;
-  reactionKind: string;//"+" | "-";
-  emoji?:string;
+  reactionKind: string; //"+" | "-";
+  emoji?: string;
 };
 
 export type Comment = {
-    postId:string;
-    createdAt:number;
-    root:string;
-    reply:string;
-}
+  postId: string;
+  createdAt: number;
+  root: string;
+  reply: string;
+};
+
+export type DM = {
+  content: string;
+  createdAt: number;
+  from: string;
+  to: string;
+  kind: "I" | "O";
+};
+
+export type DM_Chat = {
+  chatId: string;
+  messages: DM[];
+};

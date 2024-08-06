@@ -2,7 +2,13 @@ import { SimplePool } from "nostr-tools/pool";
 import * as nip19 from "nostr-tools/nip19";
 import type { WindowNostr } from "nostr-tools/nip07";
 import { Dispatch, SetStateAction } from "react";
-import { Event, getPublicKey, finalizeEvent, EventTemplate } from "nostr-tools";
+import {
+  Event,
+  getPublicKey,
+  finalizeEvent,
+  EventTemplate,
+  nip04,
+} from "nostr-tools";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 import SimpleCrypto from "simple-crypto-js";
@@ -16,6 +22,9 @@ import {
   Relay,
   Reaction,
   Comment,
+  DM,
+  DM_Chat,
+  Account,
 } from "@/app/lib/definitions";
 
 declare global {
@@ -32,7 +41,7 @@ export const defaultRelays = [
 
 const pool = new SimplePool();
 
-let CurrentAccount: ExtensionAccount | LocalAccount | undefined;
+let CurrentAccount: Account | undefined;
 
 let cachedKeys: { npub: string; nsec: string };
 let cipherAlgorithm = "aes-192-cbc";
@@ -212,7 +221,7 @@ export async function GetPostById(id: string): Promise<Post | undefined> {
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     { ids: [id] }
   );
-  if(events.length===0) return;
+  if (events.length === 0) return;
   let e = events[0];
   let p: Post = {};
   let authorEvt = await pool.querySync(
@@ -419,25 +428,46 @@ export function GetNSec(): string {
   } else return "Cannot show nSec";
 }
 
+async function decryptSecKey(
+  account: LocalAccount
+): Promise<string | undefined> {
+  let secKey = "";
+  if (cachedKeys) secKey = cachedKeys.nsec;
+  else {
+    let password = window.prompt("Enter passphrase");
+    const simpleCrypto = new SimpleCrypto(password);
+    try {
+      secKey = simpleCrypto.decrypt(account.nSec).toString();
+      cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
+    } catch (e) {
+      window.alert("Wrong passphrase");
+      return;
+    }
+  }
+  return secKey;
+}
+
 async function SignAndPublishEvent(evt: EventTemplate) {
   let signedEvent: Event | undefined;
 
   switch (CurrentAccount?.type) {
     case "local":
-      let secKey = "";
-      if (cachedKeys) secKey = cachedKeys.nsec;
-      else {
-        let password = window.prompt("Enter passphrase");
-        const simpleCrypto = new SimpleCrypto(password);
-        try {
-          secKey = simpleCrypto.decrypt(CurrentAccount.nSec).toString();
-          cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
-        } catch (e) {
-          window.alert("Wrong passphrase");
-          return;
-        }
-      }
+      // let secKey = "";
+      // if (cachedKeys) secKey = cachedKeys.nsec;
+      // else {
+      //   let password = window.prompt("Enter passphrase");
+      //   const simpleCrypto = new SimpleCrypto(password);
+      //   try {
+      //     secKey = simpleCrypto.decrypt(CurrentAccount.nSec).toString();
+      //     cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
+      //   } catch (e) {
+      //     window.alert("Wrong passphrase");
+      //     return;
+      //   }
+      // }
+      let secKey = await decryptSecKey(CurrentAccount);
 
+      if (!secKey) return;
       signedEvent = finalizeEvent(evt, hexToBytes(secKey)) as Event;
       break;
     case "extension":
@@ -632,4 +662,118 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
     SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
   };
   fx();
+}
+
+//encrypting
+async function Decrypt(data: string, pubkey: string, account: Account) {
+  if (account.readonly) throw new Error("Cant decrypt in readonly mode");
+
+  switch (account.type) {
+    case "local":
+      const secKey = await decryptSecKey(account);
+      if (!secKey) return;
+      return await nip04.decrypt(secKey, pubkey, data);
+    case "extension":
+      if (window.nostr) { console.log("wn")
+        if (window.nostr.nip04) {console.log("nip4", pubkey, account)
+          let a = await window.nostr.nip04.decrypt(pubkey, data);
+          console.log(a);
+          return a;
+          //return await window.nostr.nip04.decrypt(pubkey, data);
+        } else throw new Error("Extension dose not support decryption");
+      } else throw new Error("Missing nostr extension");
+    default:
+      throw new Error("Unknown account type");
+  }
+}
+
+async function Encrypt(text: string, pubkey: string, account: Account) {
+  if (account.readonly) throw new Error("Cant encrypt in readonly mode");
+
+  switch (account.type) {
+    case "local":
+      const secKey = await decryptSecKey(account);
+      if (!secKey) return;
+      return await nip04.encrypt(secKey, pubkey, text);
+    case "extension":
+      if (window.nostr) {
+        if (window.nostr.nip04) {
+          return await window.nostr.nip04.encrypt(pubkey, text);
+        } else throw new Error("Extension dose not support encryption");
+      } else throw new Error("Missing nostr extension");
+    default:
+      throw new Error("Unknown account type");
+  }
+}
+//
+
+export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
+  let in_filter = pubkey
+    ? {
+        "#p": [CurrentAccount?.pubkey as string],
+        authors: [pubkey],
+        kinds: [4],
+      }
+    : {
+        "#p": [CurrentAccount?.pubkey as string],
+        kinds: [4],
+      };
+  let in_events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    in_filter
+  );
+  let inbox = in_events.map((e) => {
+    return {
+      content: e.content,
+      createdAt: e.created_at,
+      from: e.pubkey,
+      to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      kind: "I",
+    } as DM;
+  });
+
+  let out_filter = pubkey
+    ? {
+        authors: [CurrentAccount?.pubkey as string],
+        "#p": [pubkey],
+        kinds: [4],
+      }
+    : {
+        authors: [CurrentAccount?.pubkey as string],
+        kinds: [4],
+      };
+  let out_events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    out_filter
+  );
+  console.log(in_events, out_events);
+  let outbox = out_events.map((e) => {
+    return {
+      content: e.content,
+      createdAt: e.created_at,
+      from: e.pubkey,
+      to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      kind: "O",
+    } as DM;
+  });
+  let chats = [...inbox.map((m) => m.from), ...outbox.map((m) => m.to)].filter(
+    (val, i, arr) => arr.indexOf(val) === i
+  );
+  return chats.map((c) => {
+    return {
+      chatId: c,
+      messages: [
+        ...inbox.filter((m) => m.from === c),
+        ...outbox.filter((m) => m.to === c),
+      ].sort((m1, m2) => m1.createdAt - m2.createdAt),
+    };
+  }) as DM_Chat[];
+}
+
+export async function DecryptDM(message: DM): Promise<string | undefined> {
+  return Decrypt(
+    message.content,
+    message.kind==="I"?message.from:message.to,
+    CurrentAccount as Account
+  );
 }
