@@ -28,7 +28,7 @@ export default function ChatBubble({ message }: { message: DM }) {
             alt={`${profile.name} Picture`}
           />
         ) : (
-          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
+          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
             {(profile ? profile.name : "Anonymous")?.charAt(0)}
           </div>
         )}

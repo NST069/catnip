@@ -29,14 +29,17 @@ export default function ChatProfile({
       }`}
       href={`/chat/${nip19.npubEncode(chat.chatId)}`}
     >
-      {/* <div className="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
-        H
-      </div> */}
-      <img
-        className="w-8 h-8 rounded-full"
-        src={profile?.picture as string}
-        alt="Profile Picture"
-      />
+      {profile?.picture ? (
+        <img
+          className="w-10 h-10 rounded-full"
+          src={profile?.picture as string}
+          alt={`${profile.name} Picture`}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
+          {(profile ? profile.name : "Anonymous")?.charAt(0)}
+        </div>
+      )}
       <div className="font-semibold">
         <div className="ml-2 text-sm">{profile?.name}</div>
       </div>

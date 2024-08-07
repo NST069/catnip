@@ -674,8 +674,10 @@ async function Decrypt(data: string, pubkey: string, account: Account) {
       if (!secKey) return;
       return await nip04.decrypt(secKey, pubkey, data);
     case "extension":
-      if (window.nostr) { console.log("wn")
-        if (window.nostr.nip04) {console.log("nip4", pubkey, account)
+      if (window.nostr) {
+        console.log("wn");
+        if (window.nostr.nip04) {
+          console.log("nip4", pubkey, account);
           let a = await window.nostr.nip04.decrypt(pubkey, data);
           console.log(a);
           return a;
@@ -773,7 +775,19 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
 export async function DecryptDM(message: DM): Promise<string | undefined> {
   return Decrypt(
     message.content,
-    message.kind==="I"?message.from:message.to,
+    message.kind === "I" ? message.from : message.to,
     CurrentAccount as Account
   );
+}
+
+export async function sendDM(message: string, to: string, tags?: string[]) {
+  let ciphertext = await Encrypt(message, to, CurrentAccount as Account);
+  let event = {
+    kind: 4,
+    created_at: Math.floor(Date.now() / 1000),
+    content: ciphertext,
+    tags: [["p", to]],
+  } as EventTemplate;
+
+  SignAndPublishEvent(event);
 }

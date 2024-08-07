@@ -8,6 +8,7 @@ import {
   CheckFollow,
 } from "@/app/lib/nostr";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ProfileCard({ user }: { user: Profile | undefined }) {
   const [npub, setNpub] = useState<string>("");
@@ -121,12 +122,12 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
                 >
                   {isFollowed ? "Unfollow" : "Follow"}
                 </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-800 hover:border-slate-700 rounded-e-lg"
+                <Link
+                  href={`/chat/${user.npub}`}
+                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-800 hover:border-slate-700 rounded-e-lg content-center"
                 >
                   Message
-                </button>
+                </Link>
               </div>
             </div>
           </div>

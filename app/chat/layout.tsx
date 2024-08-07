@@ -33,8 +33,8 @@ export default function Chat({ children }: { children: React.ReactNode }) {
         </form>
         {/* </div> */}
       </div>
-      <div className="flex-1 overflow-y-scroll">
-        <div className="flex h-full antialiased text-gray-800">
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex h-full antialiased text-slate-800">
           <div className="flex flex-row h-full w-full overflow-x-hidden">
             {children}
             <DMSidebar />
