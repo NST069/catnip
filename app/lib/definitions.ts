@@ -99,3 +99,21 @@ export type DM_Chat = {
   chatId: string;
   messages: DM[];
 };
+
+export type Channel = {
+  name: string;
+  about: string;
+  picture: string;
+  relays: string[];
+  createdAt: number;
+  channelId: string;
+};
+
+export type ChannelMessage = {
+  content: string;
+  createdAt: number;
+  channelId: string;
+  replyTo: string;
+  from: string;
+  kind: "I" | "O";
+};

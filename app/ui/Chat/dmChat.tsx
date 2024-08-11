@@ -2,8 +2,14 @@
 import { DM_Chat } from "@/app/lib/definitions";
 import { GetDM } from "@/app/lib/nostr";
 import ChatBubble from "@/app/ui/Chat/chatBubble";
-import { useState, useEffect } from "react";
-import DMForm from "./dmForm";
+import { useState, useEffect, LegacyRef, useRef } from "react";
+import DMForm from "@/app/ui/Chat/dmForm";
+
+const AlwaysScrollToBottom = () => {
+  const elementRef = useRef<HTMLDivElement>();
+  useEffect(() => elementRef.current?.scrollIntoView());
+  return <div ref={elementRef as LegacyRef<HTMLDivElement>} />;
+};
 
 export default function DMChat({ chatId }: { chatId: string }) {
   const [chat, setChat] = useState<DM_Chat>();
@@ -41,6 +47,7 @@ export default function DMChat({ chatId }: { chatId: string }) {
           <div className="flex flex-col h-full">
             {chat ? chat.messages.map((m) => <ChatBubble message={m} />) : null}
           </div>
+          <AlwaysScrollToBottom />
         </div>
         <DMForm chatId={chatId} updateChat={updateChat} />
       </div>

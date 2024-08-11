@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { GetProfile, GetCurrentAccount, LogOut, GetDM } from "@/app/lib/nostr";
+import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
 import { Profile } from "@/app/lib/definitions";
 import Link from "next/link";
 import Image from "next/image";
@@ -121,8 +121,8 @@ export default function Sidebar() {
               Messages
             </Link>
             <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600"
-              href="#"//"/channels"
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/channel"
             >
               Channels
             </Link>

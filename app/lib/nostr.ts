@@ -25,6 +25,8 @@ import {
   DM,
   DM_Chat,
   Account,
+  Channel,
+  ChannelMessage,
 } from "@/app/lib/definitions";
 
 declare global {
@@ -789,5 +791,142 @@ export async function sendDM(message: string, to: string, tags?: string[]) {
     tags: [["p", to]],
   } as EventTemplate;
 
+  SignAndPublishEvent(event);
+}
+
+export async function GetChannels() {
+  // pubkey: string,
+  // setFollows?: Dispatch<SetStateAction<string[] | undefined>>
+  //if (pubkey == "") return;
+  let follows: string[] = [];
+  let h = pool.subscribeMany(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    [
+      {
+        //authors: [pubkey],
+        kinds: [41],
+        ids: [
+          "79ae22565eb31f472837fda183e18519b71a9e6beead422d4b3b0bfa98f5f992",
+        ],
+      },
+    ],
+    {
+      onevent(event) {
+        console.log(event);
+        let channelInfo = JSON.parse(event.content);
+        let channel = {
+          name: channelInfo.name,
+          about: channelInfo.about,
+          picture: channelInfo.picture,
+          relays: channelInfo.relays,
+          createdAt: event.created_at,
+          channelId: event.tags.filter((t) => t[0] === "e")[0][1],
+        } as Channel;
+        console.log(channelInfo, channel);
+      },
+      oneose() {
+        h.close();
+        //setFollows ? setFollows(follows) : null;
+      },
+    }
+  );
+  //return follows;
+}
+
+export async function GetChannelById(
+  channelId: string,
+  setChannel?: Dispatch<SetStateAction<Channel | undefined>>
+): Promise<Channel | undefined> {
+  if (channelId == "") return;
+  console.log("id ok");
+  let events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    {
+      kinds: [40, 41],
+      ids: [channelId],
+    }
+  );
+  console.log(events);
+  if (events.length === 0) return;
+  console.log("evt ok", events);
+  let event = events.sort((e1, e2) => e1.created_at - e2.created_at)[0];
+
+  let channelInfo = JSON.parse(event.content);
+  let channel = {
+    name: channelInfo.name,
+    about: channelInfo.about,
+    picture: channelInfo.picture,
+    relays: channelInfo.relays,
+    createdAt: event.created_at,
+    channelId:
+      event.kind === 40
+        ? event.id
+        : event.tags.filter((t) => t[0] === "e")[0][1],
+  } as Channel;
+  console.log(channelInfo, channel);
+
+  setChannel ? setChannel(channel) : null;
+  return channel;
+}
+
+export async function GetChannelMessages(
+  channelId: string,
+  setMessages?: Dispatch<SetStateAction<ChannelMessage[] | undefined>>
+) {
+  if (channelId == "") return;
+  let messages: ChannelMessage[] = [];
+  let events: Event[] = [];
+  let h = pool.subscribeMany(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    [
+      {
+        kinds: [42],
+        "#e": [channelId],
+      },
+    ],
+    {
+      onevent(event) {
+        events.push(event);
+        console.log(event.tags.filter((t) => t[0] === "e")[0][1]);
+        let message = {
+          content: event.content,
+          createdAt: event.created_at,
+          channelId: event.tags.filter((t) => t[0] === "e")[0][1],
+          //replyTo: event.tags.filter((t) => t[0] === "e" && !t[3])[0][1],
+          kind: event.pubkey === CurrentAccount?.pubkey ? "O" : "I",
+          from: event.pubkey,
+        } as ChannelMessage;
+        console.log(message);
+        messages.push(message);
+      },
+      oneose() {
+        h.close();
+        console.log("eose", messages, events);
+        setMessages
+          ? setMessages(
+              messages.sort(
+                (a, b) => (a.createdAt as number) - (b.createdAt as number)
+              )
+            )
+          : null;
+      },
+    }
+  );
+  return messages;
+}
+
+export async function sendChannelMessage(
+  message: string,
+  channelId: string,
+  replyTo?: string,
+  tags?: string[]
+) {
+  let event = {
+    kind: 42,
+    created_at: Math.floor(Date.now() / 1000),
+    content: message,
+    tags: [["e", channelId, "", "root"]],
+  } as EventTemplate;
+  
   SignAndPublishEvent(event);
 }

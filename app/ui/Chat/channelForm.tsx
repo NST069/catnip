@@ -1,13 +1,12 @@
-import { DM_Chat } from "@/app/lib/definitions";
-import { sendDM } from "@/app/lib/nostr";
+import { sendChannelMessage } from "@/app/lib/nostr";
 import { FormEvent, useRef, useState } from "react";
 
-export default function DMForm({
-  chatId,
-  updateChat,
+export default function ChannelForm({
+  channelId,
+  updateChannel,
 }: {
-  chatId: string;
-  updateChat: () => Promise<void>;
+  channelId: string;
+  updateChannel: () => Promise<void>;
 }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,13 +20,13 @@ export default function DMForm({
 
       let message = formData.get("message")?.toString() as string;
       if (message.length > 0) {
-        await sendDM(message, chatId);
+        await sendChannelMessage(message, channelId);
         formRef.current ? formRef.current.reset() : null;
       } else window.alert("Enter message");
     } catch (error) {
       console.error(error);
     } finally {
-      await updateChat();
+      await updateChannel();
       setIsLoading(false);
     }
   }
