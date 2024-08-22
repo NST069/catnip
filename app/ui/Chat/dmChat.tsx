@@ -22,10 +22,8 @@ export default function DMChat({ chatId }: { chatId: string }) {
 
   let updateChat = async () => {
     let chats = await GetDM(chatId);
-    console.log(chats);
     if (chats) setChat(chats[0]);
     else setChat({ chatId, messages: [] } as DM_Chat);
-    console.log(chat);
   };
 
   useEffect(() => {

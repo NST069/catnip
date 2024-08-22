@@ -677,14 +677,9 @@ async function Decrypt(data: string, pubkey: string, account: Account) {
       return await nip04.decrypt(secKey, pubkey, data);
     case "extension":
       if (window.nostr) {
-        console.log("wn");
         if (window.nostr.nip04) {
-          console.log("nip4", pubkey, account);
-          let a = await window.nostr.nip04.decrypt(pubkey, data);
-          console.log(a);
-          return a;
-          //return await window.nostr.nip04.decrypt(pubkey, data);
-        } else throw new Error("Extension dose not support decryption");
+          return await window.nostr.nip04.decrypt(pubkey, data);
+        } else throw new Error("Extension does not support decryption");
       } else throw new Error("Missing nostr extension");
     default:
       throw new Error("Unknown account type");
@@ -750,7 +745,6 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     out_filter
   );
-  console.log(in_events, out_events);
   let outbox = out_events.map((e) => {
     return {
       content: e.content,
@@ -794,43 +788,15 @@ export async function sendDM(message: string, to: string, tags?: string[]) {
   SignAndPublishEvent(event);
 }
 
-export async function GetChannels() {
-  // pubkey: string,
-  // setFollows?: Dispatch<SetStateAction<string[] | undefined>>
-  //if (pubkey == "") return;
-  let follows: string[] = [];
-  let h = pool.subscribeMany(
+export async function GetChannels():Promise<string[]|undefined> {
+  let events = await pool.querySync(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
-    [
-      {
-        //authors: [pubkey],
-        kinds: [41],
-        ids: [
-          "79ae22565eb31f472837fda183e18519b71a9e6beead422d4b3b0bfa98f5f992",
-        ],
-      },
-    ],
     {
-      onevent(event) {
-        console.log(event);
-        let channelInfo = JSON.parse(event.content);
-        let channel = {
-          name: channelInfo.name,
-          about: channelInfo.about,
-          picture: channelInfo.picture,
-          relays: channelInfo.relays,
-          createdAt: event.created_at,
-          channelId: event.tags.filter((t) => t[0] === "e")[0][1],
-        } as Channel;
-        console.log(channelInfo, channel);
-      },
-      oneose() {
-        h.close();
-        //setFollows ? setFollows(follows) : null;
-      },
+      authors: [CurrentAccount?.pubkey as string],
+      kinds: [10005],
     }
-  );
-  //return follows;
+  ) as Event[];
+  return events[0].tags.filter(t=>t[0]==="e").map(t=>t[1]);
 }
 
 export async function GetChannelById(
@@ -838,7 +804,6 @@ export async function GetChannelById(
   setChannel?: Dispatch<SetStateAction<Channel | undefined>>
 ): Promise<Channel | undefined> {
   if (channelId == "") return;
-  console.log("id ok");
   let events = await pool.querySync(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     {
@@ -846,9 +811,7 @@ export async function GetChannelById(
       ids: [channelId],
     }
   );
-  console.log(events);
   if (events.length === 0) return;
-  console.log("evt ok", events);
   let event = events.sort((e1, e2) => e1.created_at - e2.created_at)[0];
 
   let channelInfo = JSON.parse(event.content);
@@ -863,7 +826,6 @@ export async function GetChannelById(
         ? event.id
         : event.tags.filter((t) => t[0] === "e")[0][1],
   } as Channel;
-  console.log(channelInfo, channel);
 
   setChannel ? setChannel(channel) : null;
   return channel;
@@ -887,7 +849,6 @@ export async function GetChannelMessages(
     {
       onevent(event) {
         events.push(event);
-        console.log(event.tags.filter((t) => t[0] === "e")[0][1]);
         let message = {
           content: event.content,
           createdAt: event.created_at,
@@ -896,12 +857,10 @@ export async function GetChannelMessages(
           kind: event.pubkey === CurrentAccount?.pubkey ? "O" : "I",
           from: event.pubkey,
         } as ChannelMessage;
-        console.log(message);
         messages.push(message);
       },
       oneose() {
         h.close();
-        console.log("eose", messages, events);
         setMessages
           ? setMessages(
               messages.sort(

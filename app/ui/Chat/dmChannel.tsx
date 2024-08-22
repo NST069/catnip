@@ -25,7 +25,6 @@ export default function DMChannel({ channelId }: { channelId: string }) {
     const id = setInterval(async () => {
       await updateChannel();
       setUpdate(!update);
-      console.log(messages);
     }, 5000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps

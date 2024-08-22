@@ -16,7 +16,6 @@ export default function DMSidebar() {
 
   let updateChats = async () => {
     setChats(await GetDM());
-    console.log(chats);
   };
 
   useEffect(() => {
