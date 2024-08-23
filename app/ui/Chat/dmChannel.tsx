@@ -36,10 +36,25 @@ export default function DMChannel({ channelId }: { channelId: string }) {
   return (
     <div className="flex flex-col flex-auto h-full p-2 bg-slate-900">
       <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-slate-800 h-full p-4">
+        <div className="flex flex-row bg-slate-800 items-center mb-2">
+          {channel?.picture ? (
+            <img
+              className="w-10 h-10 rounded-full"
+              src={channel?.picture as string}
+              alt={`${channel.name} Picture`}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
+              {(channel ? channel.name : "Anonymous")?.charAt(0)}
+            </div>
+          )}
+          <div className="font-semibold text-center flex-1 text-lg text-slate-300" >{channel?.name}</div>
+        </div>
+        <hr />
         <div className="flex flex-col h-full overflow-x-auto mb-4">
           <div className="flex flex-col h-full">
             {messages
-              ? messages.map((m) => <ChannelBubble message={m} />)
+              ? messages.map((m, ind) => <ChannelBubble message={m} key={ind} />)
               : null}
             <AlwaysScrollToBottom />
           </div>

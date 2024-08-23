@@ -256,14 +256,14 @@ export async function GetFeed(
 ) {
   let filter = follows
     ? {
-        authors: follows,
-        kinds: [1],
-        limit: 50,
-      }
+      authors: follows,
+      kinds: [1],
+      limit: 50,
+    }
     : {
-        kinds: [1],
-        limit: 50,
-      };
+      kinds: [1],
+      limit: 50,
+    };
 
   let pp: Post[] = [];
 
@@ -542,8 +542,8 @@ export async function UpdateRelays(pubkey: string, relays?: Relay[]) {
   let rel = relays
     ? relays
     : defaultRelays.map((r) => {
-        return { address: r, read: true, write: true } as Relay;
-      });
+      return { address: r, read: true, write: true } as Relay;
+    });
   let evtRelays: EventTemplate = {
     kind: 10002,
     tags: rel.map((r) => {
@@ -634,9 +634,11 @@ export async function CheckFollow(
       }
     )
   )[0];
-  let res = event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0;
-  setIsFollowed ? setIsFollowed(res) : null;
-  return res;
+  if (event) {
+    let res = event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0;
+    setIsFollowed ? setIsFollowed(res) : null;
+    return res;
+  }
 }
 
 export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
@@ -650,7 +652,7 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
       }
     )
   )[0];
-  let tags = event.tags;
+  let tags = event ? event.tags : [];
   if (tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0)
     tags = tags.filter((t) => t[1] !== pubkey);
   else tags.push(["p", pubkey]);
@@ -658,7 +660,7 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
     let evtFollows: EventTemplate = {
       kind: 3,
       tags,
-      content: event.content,
+      content: event?event.content:JSON.stringify(await GetRelays(pubkey)),
       created_at: Math.floor(Date.now() / 1000),
     };
     SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
@@ -709,14 +711,14 @@ async function Encrypt(text: string, pubkey: string, account: Account) {
 export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
   let in_filter = pubkey
     ? {
-        "#p": [CurrentAccount?.pubkey as string],
-        authors: [pubkey],
-        kinds: [4],
-      }
+      "#p": [CurrentAccount?.pubkey as string],
+      authors: [pubkey],
+      kinds: [4],
+    }
     : {
-        "#p": [CurrentAccount?.pubkey as string],
-        kinds: [4],
-      };
+      "#p": [CurrentAccount?.pubkey as string],
+      kinds: [4],
+    };
   let in_events = await pool.querySync(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     in_filter
@@ -733,14 +735,14 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
 
   let out_filter = pubkey
     ? {
-        authors: [CurrentAccount?.pubkey as string],
-        "#p": [pubkey],
-        kinds: [4],
-      }
+      authors: [CurrentAccount?.pubkey as string],
+      "#p": [pubkey],
+      kinds: [4],
+    }
     : {
-        authors: [CurrentAccount?.pubkey as string],
-        kinds: [4],
-      };
+      authors: [CurrentAccount?.pubkey as string],
+      kinds: [4],
+    };
   let out_events = await pool.querySync(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     out_filter
@@ -788,7 +790,7 @@ export async function sendDM(message: string, to: string, tags?: string[]) {
   SignAndPublishEvent(event);
 }
 
-export async function GetChannels():Promise<string[]|undefined> {
+export async function GetChannels(): Promise<string[] | undefined> {
   let events = await pool.querySync(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     {
@@ -796,7 +798,7 @@ export async function GetChannels():Promise<string[]|undefined> {
       kinds: [10005],
     }
   ) as Event[];
-  return events[0].tags.filter(t=>t[0]==="e").map(t=>t[1]);
+  return events[0]?.tags?.filter(t => t[0] === "e").map(t => t[1]);
 }
 
 export async function GetChannelById(
@@ -863,10 +865,10 @@ export async function GetChannelMessages(
         h.close();
         setMessages
           ? setMessages(
-              messages.sort(
-                (a, b) => (a.createdAt as number) - (b.createdAt as number)
-              )
+            messages.sort(
+              (a, b) => (a.createdAt as number) - (b.createdAt as number)
             )
+          )
           : null;
       },
     }
@@ -886,6 +888,6 @@ export async function sendChannelMessage(
     content: message,
     tags: [["e", channelId, "", "root"]],
   } as EventTemplate;
-  
+
   SignAndPublishEvent(event);
 }
