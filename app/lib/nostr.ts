@@ -2,7 +2,13 @@ import { SimplePool } from "nostr-tools/pool";
 import * as nip19 from "nostr-tools/nip19";
 import type { WindowNostr } from "nostr-tools/nip07";
 import { Dispatch, SetStateAction } from "react";
-import { Event, getPublicKey, finalizeEvent, EventTemplate } from "nostr-tools";
+import {
+  Event,
+  getPublicKey,
+  finalizeEvent,
+  EventTemplate,
+  nip04,
+} from "nostr-tools";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 
 import SimpleCrypto from "simple-crypto-js";
@@ -16,6 +22,11 @@ import {
   Relay,
   Reaction,
   Comment,
+  DM,
+  DM_Chat,
+  Account,
+  Channel,
+  ChannelMessage,
 } from "@/app/lib/definitions";
 
 declare global {
@@ -32,7 +43,7 @@ export const defaultRelays = [
 
 const pool = new SimplePool();
 
-let CurrentAccount: ExtensionAccount | LocalAccount | undefined;
+let CurrentAccount: Account | undefined;
 
 let cachedKeys: { npub: string; nsec: string };
 let cipherAlgorithm = "aes-192-cbc";
@@ -212,7 +223,7 @@ export async function GetPostById(id: string): Promise<Post | undefined> {
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     { ids: [id] }
   );
-  if(events.length===0) return;
+  if (events.length === 0) return;
   let e = events[0];
   let p: Post = {};
   let authorEvt = await pool.querySync(
@@ -245,14 +256,14 @@ export async function GetFeed(
 ) {
   let filter = follows
     ? {
-        authors: follows,
-        kinds: [1],
-        limit: 50,
-      }
+      authors: follows,
+      kinds: [1],
+      limit: 50,
+    }
     : {
-        kinds: [1],
-        limit: 50,
-      };
+      kinds: [1],
+      limit: 50,
+    };
 
   let pp: Post[] = [];
 
@@ -419,25 +430,46 @@ export function GetNSec(): string {
   } else return "Cannot show nSec";
 }
 
+async function decryptSecKey(
+  account: LocalAccount
+): Promise<string | undefined> {
+  let secKey = "";
+  if (cachedKeys) secKey = cachedKeys.nsec;
+  else {
+    let password = window.prompt("Enter passphrase");
+    const simpleCrypto = new SimpleCrypto(password);
+    try {
+      secKey = simpleCrypto.decrypt(account.nSec).toString();
+      cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
+    } catch (e) {
+      window.alert("Wrong passphrase");
+      return;
+    }
+  }
+  return secKey;
+}
+
 async function SignAndPublishEvent(evt: EventTemplate) {
   let signedEvent: Event | undefined;
 
   switch (CurrentAccount?.type) {
     case "local":
-      let secKey = "";
-      if (cachedKeys) secKey = cachedKeys.nsec;
-      else {
-        let password = window.prompt("Enter passphrase");
-        const simpleCrypto = new SimpleCrypto(password);
-        try {
-          secKey = simpleCrypto.decrypt(CurrentAccount.nSec).toString();
-          cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
-        } catch (e) {
-          window.alert("Wrong passphrase");
-          return;
-        }
-      }
+      // let secKey = "";
+      // if (cachedKeys) secKey = cachedKeys.nsec;
+      // else {
+      //   let password = window.prompt("Enter passphrase");
+      //   const simpleCrypto = new SimpleCrypto(password);
+      //   try {
+      //     secKey = simpleCrypto.decrypt(CurrentAccount.nSec).toString();
+      //     cachedKeys = { npub: getPublicKey(hexToBytes(secKey)), nsec: secKey };
+      //   } catch (e) {
+      //     window.alert("Wrong passphrase");
+      //     return;
+      //   }
+      // }
+      let secKey = await decryptSecKey(CurrentAccount);
 
+      if (!secKey) return;
       signedEvent = finalizeEvent(evt, hexToBytes(secKey)) as Event;
       break;
     case "extension":
@@ -510,8 +542,8 @@ export async function UpdateRelays(pubkey: string, relays?: Relay[]) {
   let rel = relays
     ? relays
     : defaultRelays.map((r) => {
-        return { address: r, read: true, write: true } as Relay;
-      });
+      return { address: r, read: true, write: true } as Relay;
+    });
   let evtRelays: EventTemplate = {
     kind: 10002,
     tags: rel.map((r) => {
@@ -602,9 +634,11 @@ export async function CheckFollow(
       }
     )
   )[0];
-  let res = event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0;
-  setIsFollowed ? setIsFollowed(res) : null;
-  return res;
+  if (event) {
+    let res = event.tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0;
+    setIsFollowed ? setIsFollowed(res) : null;
+    return res;
+  }
 }
 
 export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
@@ -618,7 +652,7 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
       }
     )
   )[0];
-  let tags = event.tags;
+  let tags = event ? event.tags : [];
   if (tags.filter((t) => t[0] == "p" && t[1] == pubkey).length > 0)
     tags = tags.filter((t) => t[1] !== pubkey);
   else tags.push(["p", pubkey]);
@@ -626,10 +660,234 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
     let evtFollows: EventTemplate = {
       kind: 3,
       tags,
-      content: event.content,
+      content: event?event.content:JSON.stringify(await GetRelays(pubkey)),
       created_at: Math.floor(Date.now() / 1000),
     };
     SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
   };
   fx();
+}
+
+//encrypting
+async function Decrypt(data: string, pubkey: string, account: Account) {
+  if (account.readonly) throw new Error("Cant decrypt in readonly mode");
+
+  switch (account.type) {
+    case "local":
+      const secKey = await decryptSecKey(account);
+      if (!secKey) return;
+      return await nip04.decrypt(secKey, pubkey, data);
+    case "extension":
+      if (window.nostr) {
+        if (window.nostr.nip04) {
+          return await window.nostr.nip04.decrypt(pubkey, data);
+        } else throw new Error("Extension does not support decryption");
+      } else throw new Error("Missing nostr extension");
+    default:
+      throw new Error("Unknown account type");
+  }
+}
+
+async function Encrypt(text: string, pubkey: string, account: Account) {
+  if (account.readonly) throw new Error("Cant encrypt in readonly mode");
+
+  switch (account.type) {
+    case "local":
+      const secKey = await decryptSecKey(account);
+      if (!secKey) return;
+      return await nip04.encrypt(secKey, pubkey, text);
+    case "extension":
+      if (window.nostr) {
+        if (window.nostr.nip04) {
+          return await window.nostr.nip04.encrypt(pubkey, text);
+        } else throw new Error("Extension dose not support encryption");
+      } else throw new Error("Missing nostr extension");
+    default:
+      throw new Error("Unknown account type");
+  }
+}
+//
+
+export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
+  let in_filter = pubkey
+    ? {
+      "#p": [CurrentAccount?.pubkey as string],
+      authors: [pubkey],
+      kinds: [4],
+    }
+    : {
+      "#p": [CurrentAccount?.pubkey as string],
+      kinds: [4],
+    };
+  let in_events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    in_filter
+  );
+  let inbox = in_events.map((e) => {
+    return {
+      content: e.content,
+      createdAt: e.created_at,
+      from: e.pubkey,
+      to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      kind: "I",
+    } as DM;
+  });
+
+  let out_filter = pubkey
+    ? {
+      authors: [CurrentAccount?.pubkey as string],
+      "#p": [pubkey],
+      kinds: [4],
+    }
+    : {
+      authors: [CurrentAccount?.pubkey as string],
+      kinds: [4],
+    };
+  let out_events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    out_filter
+  );
+  let outbox = out_events.map((e) => {
+    return {
+      content: e.content,
+      createdAt: e.created_at,
+      from: e.pubkey,
+      to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      kind: "O",
+    } as DM;
+  });
+  let chats = [...inbox.map((m) => m.from), ...outbox.map((m) => m.to)].filter(
+    (val, i, arr) => arr.indexOf(val) === i
+  );
+  return chats.map((c) => {
+    return {
+      chatId: c,
+      messages: [
+        ...inbox.filter((m) => m.from === c),
+        ...outbox.filter((m) => m.to === c),
+      ].sort((m1, m2) => m1.createdAt - m2.createdAt),
+    };
+  }) as DM_Chat[];
+}
+
+export async function DecryptDM(message: DM): Promise<string | undefined> {
+  return Decrypt(
+    message.content,
+    message.kind === "I" ? message.from : message.to,
+    CurrentAccount as Account
+  );
+}
+
+export async function sendDM(message: string, to: string, tags?: string[]) {
+  let ciphertext = await Encrypt(message, to, CurrentAccount as Account);
+  let event = {
+    kind: 4,
+    created_at: Math.floor(Date.now() / 1000),
+    content: ciphertext,
+    tags: [["p", to]],
+  } as EventTemplate;
+
+  SignAndPublishEvent(event);
+}
+
+export async function GetChannels(): Promise<string[] | undefined> {
+  let events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    {
+      authors: [CurrentAccount?.pubkey as string],
+      kinds: [10005],
+    }
+  ) as Event[];
+  return events[0]?.tags?.filter(t => t[0] === "e").map(t => t[1]);
+}
+
+export async function GetChannelById(
+  channelId: string,
+  setChannel?: Dispatch<SetStateAction<Channel | undefined>>
+): Promise<Channel | undefined> {
+  if (channelId == "") return;
+  let events = await pool.querySync(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    {
+      kinds: [40, 41],
+      ids: [channelId],
+    }
+  );
+  if (events.length === 0) return;
+  let event = events.sort((e1, e2) => e1.created_at - e2.created_at)[0];
+
+  let channelInfo = JSON.parse(event.content);
+  let channel = {
+    name: channelInfo.name,
+    about: channelInfo.about,
+    picture: channelInfo.picture,
+    relays: channelInfo.relays,
+    createdAt: event.created_at,
+    channelId:
+      event.kind === 40
+        ? event.id
+        : event.tags.filter((t) => t[0] === "e")[0][1],
+  } as Channel;
+
+  setChannel ? setChannel(channel) : null;
+  return channel;
+}
+
+export async function GetChannelMessages(
+  channelId: string,
+  setMessages?: Dispatch<SetStateAction<ChannelMessage[] | undefined>>
+) {
+  if (channelId == "") return;
+  let messages: ChannelMessage[] = [];
+  let events: Event[] = [];
+  let h = pool.subscribeMany(
+    CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
+    [
+      {
+        kinds: [42],
+        "#e": [channelId],
+      },
+    ],
+    {
+      onevent(event) {
+        events.push(event);
+        let message = {
+          content: event.content,
+          createdAt: event.created_at,
+          channelId: event.tags.filter((t) => t[0] === "e")[0][1],
+          //replyTo: event.tags.filter((t) => t[0] === "e" && !t[3])[0][1],
+          kind: event.pubkey === CurrentAccount?.pubkey ? "O" : "I",
+          from: event.pubkey,
+        } as ChannelMessage;
+        messages.push(message);
+      },
+      oneose() {
+        h.close();
+        setMessages
+          ? setMessages(
+            messages.sort(
+              (a, b) => (a.createdAt as number) - (b.createdAt as number)
+            )
+          )
+          : null;
+      },
+    }
+  );
+  return messages;
+}
+
+export async function sendChannelMessage(
+  message: string,
+  channelId: string,
+  replyTo?: string,
+  tags?: string[]
+) {
+  let event = {
+    kind: 42,
+    created_at: Math.floor(Date.now() / 1000),
+    content: message,
+    tags: [["e", channelId, "", "root"]],
+  } as EventTemplate;
+
+  SignAndPublishEvent(event);
 }

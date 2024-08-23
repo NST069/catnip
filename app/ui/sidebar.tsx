@@ -114,9 +114,18 @@ export default function Sidebar() {
             >
               Profile
             </Link>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600">
+            <Link
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/chat"
+            >
               Messages
-            </div>
+            </Link>
+            <Link
+              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
+              href="/channel"
+            >
+              Channels
+            </Link>
             <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600">
               Notifications
             </div>

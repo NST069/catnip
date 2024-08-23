@@ -1,7 +1,12 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
 
-import { SignIn_nSec, defaultRelays, UpdateProfile, UpdateRelays } from "@/app/lib/nostr";
+import {
+  SignIn_nSec,
+  defaultRelays,
+  UpdateProfile,
+  UpdateRelays,
+} from "@/app/lib/nostr";
 import { generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import Redirect from "@/app/lib/redirect";
