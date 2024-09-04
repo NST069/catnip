@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 
+import Avatar from "@/app/ui/Components/Avatar";
+
 import { Profile } from "@/app/lib/definitions";
 import {
   GetProfile,
@@ -8,7 +10,6 @@ import {
   UpdateProfile,
   GetNSec,
 } from "@/app/lib/nostr";
-import Image from "next/image";
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<Profile>();
@@ -70,11 +71,7 @@ export default function ProfileSettingsPage() {
           className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
         />
         <label className="block font-semibold">Picture</label>
-        <img
-          className="object-cover object-center h-64"
-          src={picture}
-          alt="Profile Pic"
-        />
+        <Avatar id={profile?.id} size={64} rounded src={picture as string} alt={"Profile Pic"} />
         <input
           type="text"
           value={picture}

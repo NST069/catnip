@@ -1,6 +1,12 @@
 "use client";
-import moment from "moment";
 import React, { useState, useEffect, useActionState } from "react";
+import Link from "next/link";
+import moment from "moment";
+import { nip19 } from "nostr-tools";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
+import PostForm from "@/app/ui/Social/postForm";
 
 import { Post, Tag, Profile, Reaction, Comment } from "@/app/lib/definitions";
 import {
@@ -11,10 +17,6 @@ import {
   LeaveLike,
   GetCurrentAccount,
 } from "@/app/lib/nostr";
-import PostForm from "@/app/ui/Social/postForm";
-import Link from "next/link";
-import { nip19 } from "nostr-tools";
-import Image from "next/image";
 
 export default function CommentCard({
   comment,
@@ -53,18 +55,14 @@ export default function CommentCard({
   return (
     <div className="flex-col w-full mx-auto bg-slate-800 ">
       <div className="flex flex-row">
-        <img
-          className="object-cover w-12 h-12 border-2 border-slate-900 rounded-full"
-          alt={post?.authorName + " avatar"}
-          src={post?.authorAvatar as string}
-        />
+        <Avatar id={post?.authorId} size={12} rounded src={post?.authorAvatar as string} alt={post?.authorName + " Avatar"} />
         <div className="flex-col mt-1">
           <Link
             href={
               post?.authorId
                 ? `/profile/${nip19.nprofileEncode({
-                    pubkey: post?.authorId,
-                  } as nip19.ProfilePointer)}`
+                  pubkey: post?.authorId,
+                } as nip19.ProfilePointer)}`
                 : "#"
             }
             className="flex items-center flex-1 px-4 font-bold leading-tight"
@@ -85,9 +83,8 @@ export default function CommentCard({
             onClick={() => setReplyFormActive(!replyFormActive)}
           >
             <svg
-              className={`w-5 h-5 ml-2 ${
-                replyFormActive ? "text-slate-400" : "text-slate-600"
-              } cursor-pointer fill-current hover:text-slate-400`}
+              className={`w-5 h-5 ml-2 ${replyFormActive ? "text-slate-400" : "text-slate-600"
+                } cursor-pointer fill-current hover:text-slate-400`}
               viewBox="0 0 95 78"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -98,12 +95,11 @@ export default function CommentCard({
             </svg>
           </button>
           <button
-            className={`inline-flex items-center px-1 -ml-1 flex-column ${
-              reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
+            className={`inline-flex items-center px-1 -ml-1 flex-column ${reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
                 ?.length
                 ? "text-slate-300"
                 : "text-slate-500"
-            }`}
+              }`}
             onClick={async () => {
               await LeaveLike(
                 "❤️",

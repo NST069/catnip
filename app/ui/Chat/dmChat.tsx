@@ -1,11 +1,15 @@
 "use client";
-import { DM_Chat, Profile } from "@/app/lib/definitions";
-import { GetDM, GetProfile } from "@/app/lib/nostr";
-import ChatBubble from "@/app/ui/Chat/chatBubble";
 import { useState, useEffect, LegacyRef, useRef } from "react";
-import DMForm from "@/app/ui/Chat/dmForm";
 import Link from "next/link";
 import { nip19 } from "nostr-tools";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
+import ChatBubble from "@/app/ui/Chat/chatBubble";
+import DMForm from "@/app/ui/Chat/dmForm";
+
+import { DM_Chat, Profile } from "@/app/lib/definitions";
+import { GetDM, GetProfile } from "@/app/lib/nostr";
 
 const AlwaysScrollToBottom = () => {
   const elementRef = useRef<HTMLDivElement>();
@@ -51,17 +55,7 @@ export default function DMChat({ chatId }: { chatId: string }) {
           }
           className="flex flex-row bg-slate-800 items-center mb-2"
         >
-          {profile?.picture ? (
-            <img
-              className="w-10 h-10 rounded-full"
-              src={profile?.picture as string}
-              alt={`${profile.name} Picture`}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
-              {(profile ? profile.name : "Anonymous")?.charAt(0)}
-            </div>
-          )}
+          <Avatar id={profile?.id} size={10} rounded src={profile?.picture as string} alt={profile?.name + " Avatar"} />
           <div className="font-semibold text-center flex-1 text-lg text-slate-300" >{profile?.name}</div>
         </Link>
         <hr />

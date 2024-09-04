@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import Link from "next/link";
+
+import Avatar from "@/app/ui/Components/Avatar";
 
 import { Profile } from "@/app/lib/definitions";
 import {
@@ -7,8 +10,6 @@ import {
   ToggleFollowing,
   CheckFollow,
 } from "@/app/lib/nostr";
-import Image from "next/image";
-import Link from "next/link";
 
 export default function ProfileCard({ user }: { user: Profile | undefined }) {
   const [npub, setNpub] = useState<string>("");
@@ -17,8 +18,8 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
   useEffect(() => {
     setNpub(
       user?.npub?.substring(0, 8) +
-        "..." +
-        user?.npub?.substring(user?.npub?.length - 8)
+      "..." +
+      user?.npub?.substring(user?.npub?.length - 8)
     );
     CheckFollow(user?.id as string, setIsFollowed);
   }, [user]);
@@ -54,32 +55,9 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
             </div>
           )}
           <div className="flex flex-row">
-            {user.picture ? (
-              <div className="mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden flex-shrink-0">
-                <img
-                  className="object-cover object-center h-64"
-                  src={user?.picture}
-                  alt={user?.name as string}
-                />
-              </div>
-            ) : (
-              <div className="grid bg-slate-800 mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden place-items-center flex-shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  className="w-12 h-12 text-slate-500"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                  ></path>
-                </svg>
-              </div>
-            )}
+            <div className="mx-16 w-64 h-64 relative -mt-32 border-4 border-slate-950 rounded-full overflow-hidden flex-shrink-0">
+              <Avatar id={user?.id} size={64} rounded src={user?.picture as string} alt={user?.name as string} />
+            </div>
             <div className="flex flex-grow justify-between py-4">
               <div className="p-5 text-slate-500">
                 <div className="flex items-start">
@@ -93,8 +71,8 @@ export default function ProfileCard({ user }: { user: Profile | undefined }) {
                       onMouseLeave={() =>
                         setNpub(
                           user.npub.substring(0, 8) +
-                            "..." +
-                            user.npub.substring(user?.npub?.length - 8)
+                          "..." +
+                          user.npub.substring(user?.npub?.length - 8)
                         )
                       }
                       style={{

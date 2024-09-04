@@ -1,5 +1,9 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
+
+import Avatar from "@/app/ui/Components/Avatar";
 
 import {
   SignIn_nSec,
@@ -7,10 +11,7 @@ import {
   UpdateProfile,
   UpdateRelays,
 } from "@/app/lib/nostr";
-import { generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import Redirect from "@/app/lib/redirect";
-import Image from "next/image";
 
 export default function Register() {
   const [nSec, setNSec] = useState<string>("");
@@ -77,13 +78,11 @@ export default function Register() {
                 </div>
                 <div className="flex flex-col flex-1">
                   <label className="block font-semibold">Picture</label>
-                  <img
-                    className="aspect-square object-cover flex-shrink-0" //"object-cover object-center flex-1 w-auto"
-                    src={picture}
-                    alt="Profile Pic"
-                  />
+                  <div className="flex-shrink-0">
+                    <Avatar id={pubKey} src={picture} alt={"Profile Pic"} />
+                  </div>
                   <input
-                    type="text"
+                    type="text" //nsec1q5maes60aaw02rj9hwd54cwsj4qtyewt3a5039vymp3xs0guyzeqsknnqx
                     value={picture}
                     onChange={(e) => setPicture(e.target.value)}
                     placeholder="Picture"

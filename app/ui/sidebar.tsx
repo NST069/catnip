@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
-import { Profile } from "@/app/lib/definitions";
 import Link from "next/link";
-import Image from "next/image";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
+import { Profile } from "@/app/lib/definitions";
+import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
 
 export default function Sidebar() {
   const [user, setUser] = useState<Profile>();
@@ -46,51 +48,28 @@ export default function Sidebar() {
         <div className="mt-3 mb-3 flex flex-col w-full">
           <div className="flex justify-between w-full">
             <div className="flex flex-col items-center text-slate-500">
-              {user ? (
-                <div className="flex items-center gap-4 mx-4">
-                  <img
-                    className="w-12 h-12 rounded-full"
-                    src={user?.picture as string}
-                    alt=""
-                  />
 
-                  <div className="font-medium">
-                    <div>{user?.name}</div>
-                    <div className="text-sm text-slate-300">
-                      <p>
-                        {user?.npub
-                          ? user?.npub.substring(0, 8) +
-                            "..." +
-                            user?.npub.substring(user.npub.length - 8)
-                          : ""}
-                      </p>
-                    </div>
+              <div className="flex items-center gap-4 mx-4">
+                <Avatar id={user?.id} size={12} rounded src={user?.picture as string} alt={user?.name + " Avatar"} />
+                {user ? (<div className="font-medium">
+                  <div>{user?.name}</div>
+                  <div className="text-sm text-slate-300">
+                    <p>
+                      {user?.npub
+                        ? user?.npub.substring(0, 8) +
+                        "..." +
+                        user?.npub.substring(user.npub.length - 8)
+                        : ""}
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <div className="flex items-center gap-4 mx-4 animate-pulse">
-                  <div className="grid bg-slate-800 rounded-full h-12 w-12 place-items-center flex-shrink-0">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      className="w-6 h-6 text-slate-500"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                      ></path>
-                    </svg>
-                  </div>
+                ) : (
                   <div className="flex-grow w-full">
                     <h1 className="w-3/5 h-2 mt-4 bg-slate-200 rounded-lg dark:bg-slate-700"></h1>
                     <p className="w-auto h-2 mt-4 bg-slate-200 rounded-lg dark:bg-slate-700"></p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
           <div className="mt-5">

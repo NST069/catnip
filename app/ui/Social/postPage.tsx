@@ -1,6 +1,13 @@
 "use client";
-import moment from "moment";
 import React, { useState, useEffect, useActionState } from "react";
+import Link from "next/link";
+import moment from "moment";
+import { nip19 } from "nostr-tools";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
+import CommentCard from "@/app/ui/Social/comment";
+import PostForm from "@/app/ui/Social/postForm";
 
 import { Post, Tag, Profile, Reaction, Comment } from "@/app/lib/definitions";
 import {
@@ -11,11 +18,6 @@ import {
   LeaveLike,
   GetCurrentAccount,
 } from "@/app/lib/nostr";
-import Link from "next/link";
-import CommentCard from "@/app/ui/Social/comment";
-import PostForm from "@/app/ui/Social/postForm";
-import { nip19 } from "nostr-tools";
-import Image from "next/image";
 
 export default function PostPage({ id }: { id: string }) {
   const [post, setPost] = useState<Post>();
@@ -64,18 +66,14 @@ export default function PostPage({ id }: { id: string }) {
     <div className="bg-slate-800 p-8 shadow-md">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <img
-            src={post?.authorAvatar as string}
-            alt={post?.authorName + "Avatar"}
-            className="w-8 h-8 rounded-full"
-          />
+          <Avatar id={post?.authorId} size={12} rounded src={post?.authorAvatar as string} alt={post?.authorName + "Avatar"} />
           <div>
             <Link
               href={
                 post?.authorId
                   ? `/profile/${nip19.nprofileEncode({
-                      pubkey: post?.authorId,
-                    } as nip19.ProfilePointer)}`
+                    pubkey: post?.authorId,
+                  } as nip19.ProfilePointer)}`
                   : "#"
               }
               className="text-slate-200 font-semibold"
@@ -138,12 +136,11 @@ export default function PostPage({ id }: { id: string }) {
       </div>
       <div className="flex items-center justify-between">
         <div
-          className={`group relative inline-block duration-300 ${
-            reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
-              ?.length
-              ? "text-slate-300"
-              : "text-slate-500"
-          }`}
+          className={`group relative inline-block duration-300 ${reactions?.filter((r) => r.userId === GetCurrentAccount()?.pubkey)
+            ?.length
+            ? "text-slate-300"
+            : "text-slate-500"
+            }`}
         >
           <div className="flex items-center space-x-2 ">
             <button
@@ -183,9 +180,8 @@ export default function PostPage({ id }: { id: string }) {
           ) : null}
         </div>
         <button
-          className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1 ${
-            replyFormActive ? "text-slate-400" : "text-slate-600"
-          }`}
+          className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1 ${replyFormActive ? "text-slate-400" : "text-slate-600"
+            }`}
           onClick={() => setReplyFormActive(!replyFormActive)}
         >
           <svg

@@ -1,9 +1,13 @@
 "use client";
-import { Channel, ChannelMessage } from "@/app/lib/definitions";
 import { useState, useEffect, useRef, LegacyRef } from "react";
-import { GetChannelById, GetChannelMessages } from "@/app/lib/nostr";
-import ChannelBubble from "@/app/ui/Chat//channelBubble";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
 import ChannelForm from "@/app/ui/Chat/channelForm";
+import ChannelBubble from "@/app/ui/Chat/channelBubble";
+
+import { Channel, ChannelMessage } from "@/app/lib/definitions";
+import { GetChannelById, GetChannelMessages } from "@/app/lib/nostr";
 
 const AlwaysScrollToBottom = () => {
   const elementRef = useRef<HTMLDivElement>();
@@ -37,17 +41,7 @@ export default function DMChannel({ channelId }: { channelId: string }) {
     <div className="flex flex-col flex-auto h-full p-2 bg-slate-900">
       <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-slate-800 h-full p-4">
         <div className="flex flex-row bg-slate-800 items-center mb-2">
-          {channel?.picture ? (
-            <img
-              className="w-10 h-10 rounded-full"
-              src={channel?.picture as string}
-              alt={`${channel.name} Picture`}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
-              {(channel ? channel.name : "Anonymous")?.charAt(0)}
-            </div>
-          )}
+          <Avatar id={channel?.channelId} size={10} rounded src={channel?.picture as string} alt={channel?.name + " Avatar"} />
           <div className="font-semibold text-center flex-1 text-lg text-slate-300" >{channel?.name}</div>
         </div>
         <hr />

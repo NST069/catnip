@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
+import moment from "moment";
+
+import Avatar from "@/app/ui/Components/Avatar";
+
 import { DM, Profile } from "@/app/lib/definitions";
 import { DecryptDM, GetProfile } from "@/app/lib/nostr";
-import moment from "moment";
-import { useEffect, useState } from "react";
 
 export default function ChatBubble({ message }: { message: DM }) {
   const [msg, setMsg] = useState<string>(message.content);
@@ -17,25 +20,13 @@ export default function ChatBubble({ message }: { message: DM }) {
   return (
     <div className="p-3 rounded-lg text-slate-300">
       <div
-        className={`flex ${
-          message.kind == "I" ? "flex-row" : "flex-row-reverse"
-        } items-center`}
+        className={`flex ${message.kind == "I" ? "flex-row" : "flex-row-reverse"
+          } items-center`}
       >
-        {profile?.picture ? (
-          <img
-            className="w-10 h-10 rounded-full"
-            src={profile?.picture as string}
-            alt={`${profile.name} Picture`}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-500 flex-shrink-0">
-            {(profile ? profile.name : "Anonymous")?.charAt(0)}
-          </div>
-        )}
+          <Avatar id={profile?.id} size={10} rounded src={profile?.picture as string} alt={profile?.name + " Avatar"} />
         <div
-          className={`relative mx-3 text-sm ${
-            message.kind == "I" ? "bg-slate-700" : "bg-slate-600"
-          } py-2 px-4 shadow rounded-xl`}
+          className={`relative mx-3 text-sm ${message.kind == "I" ? "bg-slate-700" : "bg-slate-600"
+            } py-2 px-4 shadow rounded-xl`}
         >
           <span>{profile?.name ? profile.name : "Anonymous"}</span>
           <hr />

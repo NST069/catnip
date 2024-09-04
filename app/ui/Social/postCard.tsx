@@ -1,6 +1,10 @@
 "use client";
-import moment from "moment";
 import React, { useState, useEffect, useActionState } from "react";
+import Link from "next/link";
+import moment from "moment";
+import { nip19 } from "nostr-tools";
+
+import Avatar from "@/app/ui/Components/Avatar";
 
 import { Post, Tag, Profile, Reaction, Comment } from "@/app/lib/definitions";
 import {
@@ -11,9 +15,6 @@ import {
   GetCurrentAccount,
   LeaveLike,
 } from "@/app/lib/nostr";
-import Link from "next/link";
-import { nip19 } from "nostr-tools";
-import Image from "next/image";
 
 export default function PostCard({ initialPost }: { initialPost: Post }) {
   const [post, setPost] = useState<Post>();
@@ -74,27 +75,19 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
     <div className="bg-slate-800 p-8 rounded-lg shadow-md my-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          {profile?.picture ? (
-            <img
-              src={profile?.picture}
-              alt={profile?.name + "Avatar"}
-              className="w-8 h-8 rounded-full"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-slate-700" />
-          )}
+          <Avatar id={profile?.id} size={8} rounded src={profile?.picture as string} alt={profile?.name + "Avatar"} />
           <div>
             <Link
-              href={post?.authorId?`/profile/${nip19.nprofileEncode({
+              href={post?.authorId ? `/profile/${nip19.nprofileEncode({
                 pubkey: post?.authorId,
-              } as nip19.ProfilePointer)}`:"#"}
+              } as nip19.ProfilePointer)}` : "#"}
               className="text-slate-200 font-semibold"
             >
               {profile ? profile.name : "Anonymous"}
             </Link>
             <br />
             <Link
-              href={post?.id?`/post/${nip19.noteEncode(post?.id as string)}`:"#"}
+              href={post?.id ? `/post/${nip19.noteEncode(post?.id as string)}` : "#"}
               className="group relative inline-block text-slate-400 text-sm duration-300"
             >
               {moment.unix(post?.createdAt as number).fromNow()}
@@ -153,13 +146,12 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
         <div className="group relative inline-block duration-300">
           <div className="flex items-center space-x-2">
             <button
-              className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 ${
-                reactions?.filter(
-                  (r) => r.userId === GetCurrentAccount()?.pubkey
-                )?.length
-                  ? "text-slate-300"
-                  : "text-slate-500"
-              } rounded-full p-1`}
+              className={`flex justify-center items-center gap-2 px-2 hover:bg-slate-700 ${reactions?.filter(
+                (r) => r.userId === GetCurrentAccount()?.pubkey
+              )?.length
+                ? "text-slate-300"
+                : "text-slate-500"
+                } rounded-full p-1`}
               onClick={async () => {
                 await LeaveLike(
                   "❤️",
@@ -196,7 +188,7 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
           ) : null}
         </div>
         <Link
-          href={post?.id?`/post/${nip19.noteEncode(post?.id as string)}`:"#"}
+          href={post?.id ? `/post/${nip19.noteEncode(post?.id as string)}` : "#"}
           className="flex justify-center items-center gap-2 px-2 hover:bg-slate-700 rounded-full p-1"
         >
           <svg
