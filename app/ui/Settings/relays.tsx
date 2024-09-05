@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 
+import RelayItem from "@/app/ui/Components/Relay";
+
 import { Relay } from "@/app/lib/definitions";
 import { GetRelays, GetCurrentAccount, UpdateRelays } from "@/app/lib/nostr";
 
@@ -23,30 +25,7 @@ export default function Relays() {
       <span className="text-2xl font-light ">Relays</span>
       <div>
         {relays?.map((r, ind) => (
-          <div
-            className="flex flex-row items-start text-slate-500 h-10 my-5"
-            key={ind}
-          >
-            <span className="text-xl font-light w-full">{r.address}</span>
-            <div
-              className={`w-2 h-2 m-4 ${
-                r.read ? "bg-green-500" : "bg-green-950"
-              } rounded-full`}
-            />
-            <div
-              className={`w-2 h-2 m-4 ${
-                r.write ? "bg-blue-500" : "bg-blue-950"
-              } rounded-full`}
-            />
-            <div
-              className="w-2 h-2 m-4"
-              onClick={(e) => {
-                setRelays(relays.filter((rel) => rel !== r));
-              }}
-            >
-              x
-            </div>
-          </div>
+          <RelayItem r={r} ind={ind} deleteFx={() => setRelays(relays.filter((rel) => rel !== r))} />
         ))}
         <div className="flex flex-row items-start text-slate-500 h-10 my-5">
           <input
@@ -57,15 +36,13 @@ export default function Relays() {
             className="border w-full h-full bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
           />
           <div
-            className={`w-2 h-2 m-4 hover:cursor-pointer ${
-              read ? "bg-green-500" : "bg-green-950"
-            } rounded-full`}
+            className={`w-2 h-2 m-4 hover:cursor-pointer ${read ? "bg-green-500" : "bg-green-950"
+              } rounded-full`}
             onClick={() => setRead(!read)}
           />
           <div
-            className={`w-2 h-2 m-4 hover:cursor-pointer ${
-              write ? "bg-blue-500" : "bg-blue-950"
-            } rounded-full`}
+            className={`w-2 h-2 m-4 hover:cursor-pointer ${write ? "bg-blue-500" : "bg-blue-950"
+              } rounded-full`}
             onClick={() => setWrite(!write)}
           />
           <div

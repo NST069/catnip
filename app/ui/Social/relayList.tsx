@@ -1,23 +1,13 @@
+import RelayItem from "@/app/ui/Components/Relay";
+
 import { Relay } from "@/app/lib/definitions";
 
 export default function Relays({ relays }: { relays: Relay[] | undefined }) {
   return (
     <div>
-      {relays?.map((r, ind) => (
-        <div className="flex flex-row items-start text-slate-500 h-10" key={ind}>
-          <div className="flex-1 h-full">{r.address}</div>
-          <div
-            className={`w-2 h-2 m-4 ${
-              r.read ? "bg-green-500" : "bg-green-950"
-            } rounded-full`}
-          />
-          <div
-            className={`w-2 h-2 m-4 ${
-              r.write ? "bg-blue-500" : "bg-blue-950"
-            } rounded-full`}
-          />
-        </div>
-      ))}
+      {relays?.map((r, ind) =>
+        <RelayItem r={r} ind={ind} />
+      )}
     </div>
   );
 }
