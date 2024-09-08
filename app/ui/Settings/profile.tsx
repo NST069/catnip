@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 
 import Avatar from "@/app/ui/Components/Avatar";
+import Input from "@/app/ui/Components/Input";
+import PrimaryButton from "@/app/ui/Components/PrimaryButton";
 
 import { Profile } from "@/app/lib/definitions";
 import {
@@ -44,86 +46,39 @@ export default function ProfileSettingsPage() {
       <span className="text-2xl font-light ">Profile</span>
       <div>
         <label className="block font-semibold">Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={name} setValue={setName} placeholder="Name" />
         <label className="block font-semibold">nSec</label>
         <div className="flex flex-row">
-          <input
-            type="text"
-            disabled
-            value={nSec}
-            placeholder="nSec"
-            className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-          />
+          <Input value={nSec} placeholder="nSec" disabled />
           <button className="mx-2" onClick={() => setNSec(GetNSec())}>Show</button>
         </div>
         <label className="block font-semibold">NIP-05</label>
-        <input
-          type="text"
-          value={nip05}
-          onChange={(e) => setNip05(e.target.value)}
-          placeholder="NIP-05"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={nip05} setValue={setNip05} placeholder="NIP-05" />
         <label className="block font-semibold">Picture</label>
         <Avatar id={profile?.id} size={64} rounded src={picture as string} alt={"Profile Pic"} />
-        <input
-          type="text"
-          value={picture}
-          onChange={(e) => setPicture(e.target.value)}
-          placeholder="Picture"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={picture} setValue={setPicture} placeholder="Picture" />
         <label className="block font-semibold">Banner</label>
         <img
           className="object-cover object-center h-64"
           src={banner}
           alt="Banner Pic"
         />
-        <input
-          type="text"
-          value={banner}
-          onChange={(e) => setBanner(e.target.value)}
-          placeholder="Banner"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={banner} setValue={setBanner} placeholder="Banner" />
         <label className="block font-semibold">About</label>
-        <input
-          type="text"
-          value={about}
-          onChange={(e) => setAbout(e.target.value)}
-          placeholder="About"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={about} setValue={setAbout} placeholder="About" />
         <label className="block font-semibold">Website</label>
-        <input
-          type="text"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          placeholder="Website"
-          className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-        />
+        <Input value={website} setValue={setWebsite} placeholder="Website" />
       </div>
-      <div
-        className="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-slate-200 ml-2 bg-indigo-500"
-        onClick={() =>
-          UpdateProfile(profile?.id as string, {
-            name: name,
-            nip05: nip05,
-            banner: banner,
-            picture: picture,
-            website: website,
-            about: about,
-          })
-        }
-      >
-        Submit
-      </div>
+      <PrimaryButton caption="Submit" click={() =>
+        UpdateProfile(profile?.id as string, {
+          name: name,
+          nip05: nip05,
+          banner: banner,
+          picture: picture,
+          website: website,
+          about: about,
+        })
+      } full />
     </div>
   );
 }

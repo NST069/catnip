@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 
 import RelayItem from "@/app/ui/Components/Relay";
+import PrimaryButton from "@/app/ui/Components/PrimaryButton";
+import Input from "@/app/ui/Components/Input";
 
 import { Relay } from "@/app/lib/definitions";
 import { GetRelays, GetCurrentAccount, UpdateRelays } from "@/app/lib/nostr";
@@ -28,13 +30,7 @@ export default function Relays() {
           <RelayItem r={r} ind={ind} deleteFx={() => setRelays(relays.filter((rel) => rel !== r))} />
         ))}
         <div className="flex flex-row items-start text-slate-500 h-10 my-5">
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="relay"
-            className="border w-full h-full bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-          />
+          <Input value={address} setValue={setAddress} placeholder="relay" />
           <div
             className={`w-2 h-2 m-4 hover:cursor-pointer ${read ? "bg-green-500" : "bg-green-950"
               } rounded-full`}
@@ -58,14 +54,8 @@ export default function Relays() {
           </div>
         </div>
       </div>
-      <div
-        className="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-slate-200 ml-2 bg-indigo-500"
-        onClick={() =>
-          UpdateRelays(GetCurrentAccount()?.pubkey as string, relays as Relay[])
-        }
-      >
-        Submit
-      </div>
+      <PrimaryButton caption="Submit" click={() =>
+        UpdateRelays(GetCurrentAccount()?.pubkey as string, relays as Relay[])} full />
     </div>
   );
 }

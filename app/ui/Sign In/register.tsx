@@ -4,6 +4,8 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
 
 import Avatar from "@/app/ui/Components/Avatar";
+import PrimaryButton from "@/app/ui/Components/PrimaryButton";
+import Input from "@/app/ui/Components/Input";
 
 import {
   SignIn_nSec,
@@ -15,7 +17,6 @@ import Redirect from "@/app/lib/redirect";
 
 export default function Register() {
   const [nSec, setNSec] = useState<string>("");
-  const [show, setShow] = useState(false);
   const [hexKey, setHexKey] = useState("");
   //const [relayUrl, setRelayUrl] = useState<string[]>(defaultRelays);
   const [name, setName] = useState<string>("");
@@ -30,8 +31,7 @@ export default function Register() {
     setPubKey(pubkey);
     setNSec(nip19.nsecEncode(hex));
     setNpub(nip19.npubEncode(pubkey));
-    setShow(true);
-  }, [setHexKey, setNSec, setShow]);
+  }, [setHexKey, setNSec]);
 
   useEffect(() => {
     generateNewKey();
@@ -49,75 +49,38 @@ export default function Register() {
               <div className="flex flex-row gap-2">
                 <div className="flex flex-col flex-grow">
                   <label className="block font-semibold"> NSec </label>
-                  <input
-                    type={show ? "text" : "password"}
-                    value={nSec}
-                    onChange={(e) => setNSec(e.target.value)}
-                    placeholder="nSec"
-                    className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                  />
-                  <button onClick={() => setShow(!show)}>
-                    {show ? "Hide" : "Show"}
-                  </button>
+                  <Input value={nSec} setValue={setNSec} password placeholder="nSec" />
                   <label className="block mt-3 font-semibold">NPub</label>
-                  <input
-                    type="text"
-                    placeholder="nPub"
-                    disabled
-                    value={npub}
-                    className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                  />
+                  <Input value={npub} placeholder="nPub" />
                   <label className="block font-semibold">Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Name"
-                    className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                  />
+                  <Input value={name} setValue={setName} placeholder="Name" />
                 </div>
                 <div className="flex flex-col flex-1">
                   <label className="block font-semibold">Picture</label>
                   <div className="flex-shrink-0">
                     <Avatar id={pubKey} src={picture} alt={"Profile Pic"} />
                   </div>
-                  <input
-                    type="text" //nsec1q5maes60aaw02rj9hwd54cwsj4qtyewt3a5039vymp3xs0guyzeqsknnqx
-                    value={picture}
-                    onChange={(e) => setPicture(e.target.value)}
-                    placeholder="Picture"
-                    className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                  />
+                  <Input value={picture} setValue={setPicture} placeholder="Picture" />
+                  {/* nsec1q5maes60aaw02rj9hwd54cwsj4qtyewt3a5039vymp3xs0guyzeqsknnqx */}
                 </div>
               </div>
 
               <div className="flex justify-between items-baseline">
-                <button
-                  className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 "
-                  onClick={() => Redirect("/signin")}
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 "
-                  onClick={async () => {
-                    await SignIn_nSec(
-                      bytesToHex(
-                        nip19.decode<"nsec">(nSec as `nsec1${string}`)
-                          .data as Uint8Array
-                      )
-                    );
-                    UpdateProfile(pubKey as string, {
-                      name: name,
-                      picture: picture,
-                    });
-                    UpdateRelays(pubKey as string);
-                    Redirect("profile");
-                  }}
-                >
-                  Login
-                </button>
+                <PrimaryButton caption="Back" click={() => Redirect("/signin")} />
+                <PrimaryButton caption="Login" click={async () => {
+                  await SignIn_nSec(
+                    bytesToHex(
+                      nip19.decode<"nsec">(nSec as `nsec1${string}`)
+                        .data as Uint8Array
+                    )
+                  );
+                  UpdateProfile(pubKey as string, {
+                    name: name,
+                    picture: picture,
+                  });
+                  UpdateRelays(pubKey as string);
+                  Redirect("profile");
+                }} />
               </div>
             </div>
           </div>

@@ -1,15 +1,17 @@
 "use client";
 import { useState } from "react";
-
-import { SignIn_Nos2x, SignIn_nSec } from "@/app/lib/nostr";
 import { nip19 } from "nostr-tools";
 import { bytesToHex } from "@noble/hashes/utils";
+
+import PrimaryButton from "@/app/ui/Components/PrimaryButton";
+import Input from "@/app/ui/Components/Input";
+
+import { SignIn_Nos2x, SignIn_nSec } from "@/app/lib/nostr";
 import Redirect from "@/app/lib/redirect";
 
 export default function SignIn() {
   const [isSec, setIsSec] = useState<boolean>(false);
   const [nSec, setNSec] = useState<string>("");
-  const [show, setShow] = useState(false);
 
   //const [npub, setNpub] = useState("");
 
@@ -20,66 +22,28 @@ export default function SignIn() {
         <div className="mt-4 bg-slate-900 shadow-md rounded-lg text-left">
           <div className="h-2 bg-purple-400 rounded-t-md"></div>
           <div className="px-8 py-6 ">
-            <button
-              type="submit"
-              className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 w-full"
-              onClick={async () => {
-                await SignIn_Nos2x();
-                Redirect("/profile");
-              }}
-            >
-              Sign In via nos2x
-            </button>
-            <button
-              className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 w-full"
-              onClick={() => setIsSec(!isSec)}
-            >
-              Sign In via nSec
-            </button>
+            <PrimaryButton caption="Sign In via nos2x" full click={async () => {
+              await SignIn_Nos2x();
+              Redirect("/profile");
+            }} />
+            <PrimaryButton caption="Sign In via nSec" full click={() => setIsSec(!isSec)} />
             {isSec ? (
               <div>
                 <label className="block font-semibold"> NSec </label>
-                <input
-                  type={show ? "text" : "password"}
-                  value={nSec}
-                  onChange={(e) => setNSec(e.target.value)}
-                  placeholder="nSec"
-                  className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                />
-                <button onClick={() => setShow(!show)}>
-                  {show ? "Hide" : "Show"}
-                </button>
+                <Input value={nSec} setValue={setNSec} placeholder="nSec" password />
                 {/* <label className="block mt-3 font-semibold">NPub</label>
-                <input
-                  type="text"
-                  placeholder="nPub"
-                  disabled
-                  value={npub}
-                  className="border w-full h-5 px-3 py-5 mt-2 bg-slate-800 hover:outline-none focus:outline-none focus:ring-indigo-500 focus:ring-1 rounded-md"
-                /> */}
+                <Input value={npub} placeholder="nPub"/> */}
                 <div className="flex justify-between items-baseline">
-                  <button
-                    type="submit"
-                    className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 "
-                    onClick={async () => {
-                      await SignIn_nSec(
-                        bytesToHex(
-                          nip19.decode<"nsec">(nSec as `nsec1${string}`)
-                            .data as Uint8Array
-                        )
-                      );
-                      Redirect("/profile");
-                    }}
-                  >
-                    Login
-                  </button>
-
-                  <button
-                    className="mt-4 bg-purple-500 text-slate-200 py-2 px-6 rounded-md hover:bg-purple-600 "
-                    onClick={() => Redirect("/signup")}
-                  >
-                    Generate new
-                  </button>
+                  <PrimaryButton caption="Login" click={async () => {
+                    await SignIn_nSec(
+                      bytesToHex(
+                        nip19.decode<"nsec">(nSec as `nsec1${string}`)
+                          .data as Uint8Array
+                      )
+                    );
+                    Redirect("/profile");
+                  }} />
+                  <PrimaryButton caption="Generate new" click={() => Redirect("/signup")} />
                 </div>
               </div>
             ) : null}

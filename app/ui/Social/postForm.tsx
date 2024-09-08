@@ -1,5 +1,8 @@
 "use client";
 import React, { useState } from "react";
+
+import PrimaryButton from "@/app/ui/Components/PrimaryButton";
+
 import { SubmitPost, SubmitComment } from "@/app/lib/nostr";
 
 export default function PostForm({
@@ -16,9 +19,8 @@ export default function PostForm({
   return (
     <div className="mx-auto flex flex-col text-slate-400 p-4 shadow-lg bg-slate-900">
       <textarea
-        className={`bg-slate-900 sec p-3 ${
-          type === "Comment" ? "h-20" : "h-60"
-        } border border-slate-700 outline-none`}
+        className={`bg-slate-900 sec p-3 ${type === "Comment" ? "h-20" : "h-60"
+          } border border-slate-700 outline-none`}
         spellCheck="true"
         onChange={(e) => setContent(e.target.value)}
       ></textarea>
@@ -67,7 +69,7 @@ export default function PostForm({
         </div> */}
 
         <div className="buttons flex justify-end">
-          <div
+          {/* <div
             className="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-slate-200 ml-2 bg-indigo-500"
             onClick={async () => {
               type === "Comment" && commentAttributes
@@ -83,7 +85,19 @@ export default function PostForm({
             }}
           >
             {type === "Comment" ? "Comment" : "Post"}
-          </div>
+          </div> */}
+          <PrimaryButton caption={type === "Comment" ? "Comment" : "Post"} click={async () => {
+            type === "Comment" && commentAttributes
+              ? await SubmitComment(
+                content,
+                commentAttributes.root,
+                commentAttributes.reply,
+                commentAttributes.replyTo
+              )
+              : await SubmitPost(content);
+            setContent("");
+            await updatePosts();
+          }} />
         </div>
       </div>
     </div>
