@@ -3,11 +3,14 @@ import React, { useState, useEffect, useActionState } from "react";
 import Link from "next/link";
 import moment from "moment";
 import { nip19 } from "nostr-tools";
+import Autolinker from "autolinker";
+import parse from "html-react-parser";
 
 import Avatar from "@/app/ui/Components/Avatar";
 
 import CommentCard from "@/app/ui/Social/comment";
 import PostForm from "@/app/ui/Social/postForm";
+import Hashtag from "@/app/ui/Components/Hashtag";
 
 import { Post, Tag, Profile, Reaction, Comment } from "@/app/lib/definitions";
 import {
@@ -114,16 +117,18 @@ export default function PostPage({ id }: { id: string }) {
           className="text-slate-400"
           style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
         >
-          {post?.content}
+          {post?.content ? parse(Autolinker.link(post?.content, {
+            stripPrefix: false, replaceFn: (match) => {
+              const tag = match.buildTag();
+              tag.setAttr('rel', 'noopener noreferrer');
+              tag.addClass('font-medium hover:underline');
+              return tag;
+            }
+          })) : ""}
         </p>
         <div className="flex flex-wrap">
           {post?.tags?.map((t) => (
-            <span
-              key={post.id + "_" + t.value}
-              className="bg-slate-100 text-slate-800 text-xs font-medium me-2 mt-2 px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300"
-            >
-              #{t.value}
-            </span>
+            <Hashtag tag={t.value} keystring={post.id + "_" + t.value} />
           ))}
         </div>
       </div>

@@ -3,6 +3,8 @@ import React, { useState, useEffect, useActionState } from "react";
 import Link from "next/link";
 import moment from "moment";
 import { nip19 } from "nostr-tools";
+import Autolinker from "autolinker";
+import parse from "html-react-parser";
 
 import Avatar from "@/app/ui/Components/Avatar";
 
@@ -76,7 +78,14 @@ export default function CommentCard({
             </span>
           </Link>
           <div className="flex-1 px-2 ml-2 text-sm font-medium leading-loose text-slate-300">
-            {post?.content}
+          {post?.content ? parse(Autolinker.link(post?.content, {
+            stripPrefix: false, replaceFn: (match) => {
+              const tag = match.buildTag();
+              tag.setAttr('rel', 'noopener noreferrer');
+              tag.addClass('font-medium hover:underline');
+              return tag;
+            }
+          })) : ""}
           </div>
           <button
             className="inline-flex items-center px-1 pt-2 ml-1 flex-column text-slate-500"
