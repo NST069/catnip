@@ -4,12 +4,11 @@ import Link from "next/link";
 import { nip19 } from "nostr-tools";
 
 import Avatar from "@/app/ui/Components/Avatar";
+import ChatForm from "@/app/ui/Components/ChatForm";
+import ChatBubble from "@/app/ui/Components/ChatBubble";
 
-import ChatBubble from "@/app/ui/Chat/chatBubble";
-import DMForm from "@/app/ui/Chat/dmForm";
-
-import { DM_Chat, Profile } from "@/app/lib/definitions";
-import { GetDM, GetProfile } from "@/app/lib/nostr";
+import { Chat, Profile } from "@/app/lib/definitions";
+import { GetDM, GetProfile, sendDM } from "@/app/lib/nostr";
 
 const AlwaysScrollToBottom = () => {
   const elementRef = useRef<HTMLDivElement>();
@@ -18,7 +17,7 @@ const AlwaysScrollToBottom = () => {
 };
 
 export default function DMChat({ chatId }: { chatId: string }) {
-  const [chat, setChat] = useState<DM_Chat>();
+  const [chat, setChat] = useState<Chat>();
   const [profile, setProfile] = useState<Profile>();
   const [update, setUpdate] = useState<boolean>(false);
 
@@ -26,7 +25,7 @@ export default function DMChat({ chatId }: { chatId: string }) {
     let chats = await GetDM(chatId);
     GetProfile(chatId, setProfile);
     if (chats) setChat(chats[0]);
-    else setChat({ chatId, messages: [] } as DM_Chat);
+    else setChat({ chatId, messages: [] } as Chat);
   };
 
   useEffect(() => {
@@ -65,7 +64,7 @@ export default function DMChat({ chatId }: { chatId: string }) {
           </div>
           <AlwaysScrollToBottom />
         </div>
-        <DMForm chatId={chatId} updateChat={updateChat} />
+        <ChatForm chatId={chatId} updateChat={updateChat} sendMessage={sendDM}/>
       </div>
     </div>
   );

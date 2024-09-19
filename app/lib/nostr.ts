@@ -22,11 +22,10 @@ import {
   Relay,
   Reaction,
   Comment,
-  DM,
-  DM_Chat,
   Account,
   Channel,
-  ChannelMessage,
+  Message,
+  Chat,
 } from "@/app/lib/definitions";
 
 declare global {
@@ -660,7 +659,7 @@ export async function ToggleFollowing(pubkey: string, toggle?: () => void) {
     let evtFollows: EventTemplate = {
       kind: 3,
       tags,
-      content: event?event.content:JSON.stringify(await GetRelays(pubkey)),
+      content: event ? event.content : JSON.stringify(await GetRelays(pubkey)),
       created_at: Math.floor(Date.now() / 1000),
     };
     SignAndPublishEvent(evtFollows).then(() => (toggle ? toggle() : null));
@@ -708,7 +707,7 @@ async function Encrypt(text: string, pubkey: string, account: Account) {
 }
 //
 
-export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
+export async function GetDM(pubkey?: string): Promise<Chat[] | undefined> {
   let in_filter = pubkey
     ? {
       "#p": [CurrentAccount?.pubkey as string],
@@ -727,10 +726,12 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
     return {
       content: e.content,
       createdAt: e.created_at,
+      chatId: pubkey,
       from: e.pubkey,
       to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      type: "chat",
       kind: "I",
-    } as DM;
+    } as Message;
   });
 
   let out_filter = pubkey
@@ -751,10 +752,12 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
     return {
       content: e.content,
       createdAt: e.created_at,
+      chatId: pubkey,
       from: e.pubkey,
       to: e.tags.filter((t) => t[0] === "p").map((t) => t[1])[0],
+      type: "chat",
       kind: "O",
-    } as DM;
+    } as Message;
   });
   let chats = [...inbox.map((m) => m.from), ...outbox.map((m) => m.to)].filter(
     (val, i, arr) => arr.indexOf(val) === i
@@ -767,13 +770,13 @@ export async function GetDM(pubkey?: string): Promise<DM_Chat[] | undefined> {
         ...outbox.filter((m) => m.to === c),
       ].sort((m1, m2) => m1.createdAt - m2.createdAt),
     };
-  }) as DM_Chat[];
+  }) as Chat[];
 }
 
-export async function DecryptDM(message: DM): Promise<string | undefined> {
+export async function DecryptDM(message: Message): Promise<string | undefined> {
   return Decrypt(
     message.content,
-    message.kind === "I" ? message.from : message.to,
+    message.kind === "I" ? message.from : message.to as string,
     CurrentAccount as Account
   );
 }
@@ -835,10 +838,10 @@ export async function GetChannelById(
 
 export async function GetChannelMessages(
   channelId: string,
-  setMessages?: Dispatch<SetStateAction<ChannelMessage[] | undefined>>
+  setMessages?: Dispatch<SetStateAction<Message[] | undefined>>
 ) {
   if (channelId == "") return;
-  let messages: ChannelMessage[] = [];
+  let messages: Message[] = [];
   let events: Event[] = [];
   let h = pool.subscribeMany(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
@@ -855,10 +858,11 @@ export async function GetChannelMessages(
           content: event.content,
           createdAt: event.created_at,
           channelId: event.tags.filter((t) => t[0] === "e")[0][1],
-          //replyTo: event.tags.filter((t) => t[0] === "e" && !t[3])[0][1],
+          //to: event.tags.filter((t) => t[0] === "e" && !t[3])[0][1],
           kind: event.pubkey === CurrentAccount?.pubkey ? "O" : "I",
+          type: "channel",
           from: event.pubkey,
-        } as ChannelMessage;
+        } as Message;
         messages.push(message);
       },
       oneose() {

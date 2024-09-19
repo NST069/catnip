@@ -87,17 +87,19 @@ export type Comment = {
   reply: string;
 };
 
-export type DM = {
+export type Message = {
   content: string;
   createdAt: number;
+  chatId?: string;
+  to?: string;
   from: string;
-  to: string;
   kind: "I" | "O";
+  type: "chat" | "channel";
 };
 
-export type DM_Chat = {
+export type Chat = {
   chatId: string;
-  messages: DM[];
+  messages: Message[];
 };
 
 export type Channel = {
@@ -107,13 +109,4 @@ export type Channel = {
   relays: string[];
   createdAt: number;
   channelId: string;
-};
-
-export type ChannelMessage = {
-  content: string;
-  createdAt: number;
-  channelId: string;
-  replyTo: string;
-  from: string;
-  kind: "I" | "O";
 };

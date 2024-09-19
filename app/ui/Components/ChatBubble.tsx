@@ -3,17 +3,19 @@ import moment from "moment";
 
 import Avatar from "@/app/ui/Components/Avatar";
 
-import { DM, Profile } from "@/app/lib/definitions";
+import { Profile, Message } from "@/app/lib/definitions";
 import { DecryptDM, GetProfile } from "@/app/lib/nostr";
 
-export default function ChatBubble({ message }: { message: DM }) {
+export default function ChatBubble({ message }: { message: Message }) {
   const [msg, setMsg] = useState<string>(message.content);
   const [profile, setProfile] = useState<Profile>();
   useEffect(() => {
     let fetch = async () => {
       GetProfile(message.from, setProfile);
-      let decrypted = await DecryptDM(message);
-      if (decrypted) setMsg(decrypted);
+      if(message.type === "chat") {
+        let decrypted = await DecryptDM(message);
+        if (decrypted) setMsg(decrypted);
+      }
     };
     fetch();
   }, []);

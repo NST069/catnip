@@ -2,12 +2,11 @@
 import { useState, useEffect, useRef, LegacyRef } from "react";
 
 import Avatar from "@/app/ui/Components/Avatar";
+import ChatBubble from "@/app/ui/Components/ChatBubble";
+import ChatForm from "@/app/ui/Components/ChatForm";
 
-import ChannelForm from "@/app/ui/Chat/channelForm";
-import ChannelBubble from "@/app/ui/Chat/channelBubble";
-
-import { Channel, ChannelMessage } from "@/app/lib/definitions";
-import { GetChannelById, GetChannelMessages } from "@/app/lib/nostr";
+import { Channel, Message } from "@/app/lib/definitions";
+import { GetChannelById, GetChannelMessages, sendChannelMessage } from "@/app/lib/nostr";
 
 const AlwaysScrollToBottom = () => {
   const elementRef = useRef<HTMLDivElement>();
@@ -17,7 +16,7 @@ const AlwaysScrollToBottom = () => {
 
 export default function DMChannel({ channelId }: { channelId: string }) {
   const [channel, setChannel] = useState<Channel>();
-  const [messages, setMessages] = useState<ChannelMessage[]>();
+  const [messages, setMessages] = useState<Message[]>();
   const [update, setUpdate] = useState<boolean>(false);
 
   let updateChannel = async () => {
@@ -48,12 +47,12 @@ export default function DMChannel({ channelId }: { channelId: string }) {
         <div className="flex flex-col h-full overflow-x-auto mb-4">
           <div className="flex flex-col h-full">
             {messages
-              ? messages.map((m, ind) => <ChannelBubble message={m} key={ind} />)
+              ? messages.map((m, ind) => <ChatBubble message={m} key={ind} />)
               : null}
             <AlwaysScrollToBottom />
           </div>
         </div>
-        <ChannelForm channelId={channelId} updateChannel={updateChannel} />
+        <ChatForm chatId={channelId} updateChat={updateChannel} sendMessage={sendChannelMessage}/>
       </div>
     </div>
   );

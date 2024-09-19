@@ -1,13 +1,15 @@
-import { DM_Chat } from "@/app/lib/definitions";
-import { sendDM } from "@/app/lib/nostr";
 import { FormEvent, useRef, useState } from "react";
 
-export default function DMForm({
+import { sendDM, sendChannelMessage } from "@/app/lib/nostr";
+
+export default function ChatForm({
   chatId,
   updateChat,
+  sendMessage
 }: {
   chatId: string;
   updateChat: () => Promise<void>;
+  sendMessage: typeof sendDM | typeof sendChannelMessage;
 }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,7 +23,7 @@ export default function DMForm({
 
       let message = formData.get("message")?.toString() as string;
       if (message.length > 0) {
-        await sendDM(message, chatId);
+        await sendMessage(message, chatId);
         formRef.current ? formRef.current.reset() : null;
       } else window.alert("Enter message");
     } catch (error) {
@@ -34,7 +36,7 @@ export default function DMForm({
 
   return (
     <form
-      className="flex flex-row items-center h-16 rounded-xl bg-slate-900 w-full px-4"
+      className="flex flex-row items-center rounded-xl bg-slate-900 w-full px-4 py-2"
       onSubmit={onSubmit}
       ref={formRef}
     >
@@ -58,13 +60,13 @@ export default function DMForm({
       </div>
       <div className="flex-grow ml-4">
         <div className="relative w-full">
-          <input
-            type="text"
+          <textarea
             name="message"
             autoComplete="off"
-            className="flex w-full bg-slate-800 border border-slate-700 text-slate-400 rounded-xl focus:outline-none pl-4 h-10"
+            className="flex w-full bg-slate-800 border border-slate-700 text-slate-400 rounded-xl focus:outline-none pl-4 min-h-12 h-20 max-h-32"
           />
-          <button className="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-slate-400 hover:text-slate-300">
+          <div className="absolute flex items-center justify-center h-12 w-12 right-1 top-0">
+          <button className=" text-slate-400 hover:text-slate-300">
             <svg
               className="w-6 h-6"
               fill="none"
@@ -80,6 +82,7 @@ export default function DMForm({
               ></path>
             </svg>
           </button>
+          </div>
         </div>
       </div>
       <div className="ml-4">
