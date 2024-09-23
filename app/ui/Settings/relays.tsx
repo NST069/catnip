@@ -27,7 +27,7 @@ export default function Relays() {
       <span className="text-2xl font-light ">Relays</span>
       <div>
         {relays?.map((r, ind) => (
-          <RelayItem r={r} ind={ind} deleteFx={() => setRelays(relays.filter((rel) => rel !== r))} />
+          <RelayItem r={r} key={ind} deleteFx={() => setRelays(relays.filter((rel) => rel !== r))} />
         ))}
         <div className="flex flex-row items-start text-slate-500 h-10 my-5">
           <Input value={address} setValue={setAddress} placeholder="relay" />

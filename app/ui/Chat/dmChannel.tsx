@@ -52,7 +52,7 @@ export default function DMChannel({ channelId }: { channelId: string }) {
             <AlwaysScrollToBottom />
           </div>
         </div>
-        <ChatForm chatId={channelId} updateChat={updateChannel} sendMessage={sendChannelMessage}/>
+        <ChatForm chatId={channelId} updateChat={updateChannel} sendMessage={sendChannelMessage} />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { FormEvent, useRef, useState } from "react";
 
 import { sendDM, sendChannelMessage } from "@/app/lib/nostr";
+import { Attachment, Emoji, Send } from "@/app/lib/iconset";
 
 export default function ChatForm({
   chatId,
@@ -42,20 +43,7 @@ export default function ChatForm({
     >
       <div>
         <button className="flex items-center justify-center text-slate-400 hover:text-slate-300">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-            ></path>
-          </svg>
+          <Attachment />
         </button>
       </div>
       <div className="flex-grow ml-4">
@@ -66,22 +54,9 @@ export default function ChatForm({
             className="flex w-full bg-slate-800 border border-slate-700 text-slate-400 rounded-xl focus:outline-none pl-4 min-h-12 h-20 max-h-32"
           />
           <div className="absolute flex items-center justify-center h-12 w-12 right-1 top-0">
-          <button className=" text-slate-400 hover:text-slate-300">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-          </button>
+            <button className=" text-slate-400 hover:text-slate-300">
+              <Emoji />
+            </button>
           </div>
         </div>
       </div>
@@ -93,20 +68,7 @@ export default function ChatForm({
         >
           <span>Send</span>
           <span className="ml-2">
-            <svg
-              className="w-4 h-4 transform rotate-45 -mt-px"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              ></path>
-            </svg>
+            <Send/>
           </span>
         </button>
       </div>

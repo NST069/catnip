@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import Avatar from "@/app/ui/Components/Avatar";
 
-import { DM_Chat, Profile } from "@/app/lib/definitions";
+import { Chat, Profile } from "@/app/lib/definitions";
 import { GetProfile } from "@/app/lib/nostr";
 
 export default function ChatProfile({
@@ -13,7 +13,7 @@ export default function ChatProfile({
   setSelectedChatId,
   isSelected,
 }: {
-  chat: DM_Chat;
+  chat: Chat;
   setSelectedChatId: Dispatch<SetStateAction<string | undefined>>;
   isSelected: boolean;
 }) {

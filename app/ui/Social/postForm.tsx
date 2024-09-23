@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import PrimaryButton from "@/app/ui/Components/PrimaryButton";
 
 import { SubmitPost, SubmitComment } from "@/app/lib/nostr";
+import { Attachment } from "@/app/lib/iconset";
 
 export default function PostForm({
   type,
@@ -27,20 +28,7 @@ export default function PostForm({
 
       <div className="flex flex-row justify-between text-slate-500 m-2">
         <label id="select-image">
-          <svg
-            className="mr-2 cursor-pointer hover:text-slate-400 border rounded-full p-1 h-7"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-            />
-          </svg>
+          <Attachment />
           {/* <input hidden type="file" multiple @change="images = Array.from($event.target.files).map(file => ({url: URL.createObjectURL(file), name: file.name, preview: ['jpg', 'jpeg', 'png', 'gif'].includes(file.name.split('.').pop().toLowerCase()), size: file.size > 1024 ? file.size > 1048576 ? Math.round(file.size / 1048576) + 'mb' : Math.round(file.size / 1024) + 'kb' : file.size + 'b'}))" x-ref="fileInput"> */}
         </label>
         {/* </div> */}

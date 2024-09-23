@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 
 import Avatar from "@/app/ui/Components/Avatar";
+import MenuItem from "@/app/ui/Components/MenuItem";
 
 import { Profile } from "@/app/lib/definitions";
 import { GetProfile, GetCurrentAccount, LogOut } from "@/app/lib/nostr";
@@ -74,56 +74,19 @@ export default function Sidebar() {
           </div>
           <div className="mt-5">
             {!user ? (
-              <Link
-                className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-                href="/signin"
-              >
-                Sign In
-              </Link>
+              <MenuItem href="/signin" caption="Sign In" />
             ) : null}
-            <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/feed"
-            >
-              Feed
-            </Link>
-            <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/profile"
-            >
-              Profile
-            </Link>
-            <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/chat"
-            >
-              Messages
-            </Link>
-            <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/channel"
-            >
-              Channels
-            </Link>
-            <div className="flex items-center h-8 hover:bg-slate-700 text-sm px-3 text-slate-600">
-              Notifications
-            </div>
-            <Link
-              className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-              href="/settings"
-            >
-              Settings
-            </Link>
+            <MenuItem href="/feed" caption="Feed" />
+            <MenuItem href="/profile" caption="Profile" />
+            <MenuItem href="/chat" caption="Messages" />
+            <MenuItem href="/channel" caption="Channels" />
+            <MenuItem disabled caption="Notifications" />
+            <MenuItem href="/settings" caption="Settings" />
             {user ? (
-              <div
-                className="flex items-center h-8 hover:bg-slate-700 text-sm px-3"
-                onClick={() => {
-                  LogOut();
-                  updateSidebar();
-                }}
-              >
-                Log Out
-              </div>
+              <MenuItem caption="Log Out" action={() => {
+                LogOut();
+                updateSidebar();
+              }} />
             ) : null}
           </div>
         </div>

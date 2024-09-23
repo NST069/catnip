@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
-export default function Input({ value, setValue, placeholder, password = false, disabled=false }: { value: string | number, setValue?: Dispatch<SetStateAction<string>>, placeholder: string, password?: boolean, disabled?:boolean }) {
+export default function Input({ value, setValue, placeholder, password = false, disabled = false }: { value: string | number, setValue?: Dispatch<SetStateAction<string>>, placeholder: string, password?: boolean, disabled?: boolean }) {
 
     const [show, setShow] = useState(false);
 

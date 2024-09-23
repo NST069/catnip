@@ -1,11 +1,11 @@
 "use client";
-import { DM_Chat } from "@/app/lib/definitions";
+import { Chat } from "@/app/lib/definitions";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ChatProfile from "./chatProfile";
 import { GetDM } from "@/app/lib/nostr";
 
 export default function DMSidebar() {
-  const [chats, setChats] = useState<DM_Chat[]>();
+  const [chats, setChats] = useState<Chat[]>();
   const [selectedChatId, setSelectedChatId] = useState<string>();
   const [update, setUpdate] = useState<boolean>(false);
 
