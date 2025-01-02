@@ -4,6 +4,7 @@ import ProfileCard from "@/app/ui/Social/profileCard";
 import Posts from "@/app/ui/Social/posts";
 import Follows from "@/app/ui/Social/followsList";
 import Relays from "@/app/ui/Social/relayList";
+import TabButton from "@/app/ui/Components/TabButton";
 
 import { useState, useEffect } from "react";
 
@@ -49,30 +50,9 @@ export default function ProfilePage({ id }: { id: string | undefined }) {
     <main className="flex flex-col bg-slate-950">
       <ProfileCard user={user} />
       <div className="flex ">
-        <div
-          className={`flex flex-1 items-center justify-center h-8 text-sm font-medium ${
-            scope === "Posts" ? "bg-slate-800" : "bg-slate-900"
-          } hover:bg-slate-800 focus:outline-none`}
-          onClick={() => setScope("Posts")}
-        >
-          Posts {postCount}
-        </div>
-        <div
-          className={`flex flex-1 items-center justify-center h-8 text-sm font-medium ${
-            scope === "Follows" ? "bg-slate-800" : "bg-slate-900"
-          } hover:bg-slate-800 focus:outline-none`}
-          onClick={() => setScope("Follows")}
-        >
-          Follows: {follows ? follows?.length : 0}
-        </div>
-        <div
-          className={`flex flex-1 items-center justify-center h-8 text-sm font-medium ${
-            scope === "Relays" ? "bg-slate-800" : "bg-slate-900"
-          } hover:bg-slate-800 focus:outline-none`}
-          onClick={() => setScope("Relays")}
-        >
-          Relays: {relays ? relays?.length : 0}
-        </div>
+        <TabButton caption={`Posts: ${postCount ? postCount : 0}`} isSelected={scope === "Posts"} click={() => setScope("Posts")} />
+        <TabButton caption={`Follows: ${follows ? follows?.length : 0}`} isSelected={scope === "Follows"} click={() => setScope("Follows")} />
+        <TabButton caption={`Relays: ${relays ? relays?.length : 0}`} isSelected={scope === "Relays"} click={() => setScope("Relays")} />
       </div>
       {(() => {
         switch (scope) {

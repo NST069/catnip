@@ -34,10 +34,12 @@ declare global {
   }
 }
 export const defaultRelays = [
-  "wss://nostr.mom",
-  "wss://nos.lol",
-  "wss://relay.nostrcheck.me",
-  "wss://purplepag.es",
+  "wss://relay.damus.io/",
+  "wss://nostr.wine/",
+  "wss://relay.snort.social/",
+  "wss://nos.lol/",
+  "wss://purplerelay.com/",
+  "wss://nostr.land/",
 ];
 
 const pool = new SimplePool();
@@ -106,10 +108,12 @@ export async function SignIn_nSec(nSec: string) {
       userRelays = ((await GetRelays(pubkey)) as Relay[]).map((r) => r.address);
     } catch (e) {
       console.log("Failed to get relays", e);
-      if (userRelays.length === 0) {
-        userRelays = defaultRelays;
-      }
     }
+
+    if (userRelays.length === 0) {
+      userRelays = defaultRelays;
+    }
+
     const simpleCrypto = new SimpleCrypto(password);
     const encrypted = simpleCrypto.encrypt(nSec);
 
@@ -140,6 +144,8 @@ export async function GetProfile(
   }
 
   let foundProfile = false;
+  let createdAt = 0;
+  let profile: Profile | undefined = undefined;
   let h = pool.subscribeMany(
     CurrentAccount ? (CurrentAccount.relays as string[]) : defaultRelays,
     [
@@ -150,16 +156,19 @@ export async function GetProfile(
     ],
     {
       onevent(event) {
-        let profile = JSON.parse(event.content) as Profile;
+        profile = JSON.parse(event.content) as Profile;
         profile.npub = nip19.npubEncode(event.pubkey);
         profile.id = event.pubkey;
         h.close();
-        setProfile ? setProfile(profile) : null;
+        if (createdAt < event.created_at) {
+          createdAt = event.created_at;
+          setProfile ? setProfile(profile) : null;
+        }
         foundProfile = true;
-        return profile;
       },
       oneose() {
         if (!foundProfile) console.log("I don't know who " + pubkey + " is:c");
+        else return profile;
         h.close();
       },
     }

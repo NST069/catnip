@@ -75,10 +75,10 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
   }, [reactions]);
 
   return (
-    <div className="bg-slate-800 p-8 rounded-lg shadow-md my-4">
+    <div className="bg-slate-900 p-8 rounded-lg shadow-md my-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Avatar id={profile?.id} size={8} rounded src={profile?.picture as string} alt={profile?.name + "Avatar"} />
+          <Avatar id={profile?.id} size={12} rounded src={profile?.picture as string} alt={profile?.name + "Avatar"} />
           <div>
             <Link
               href={post?.authorId ? `/profile/${nip19.nprofileEncode({
@@ -101,8 +101,8 @@ export default function PostCard({ initialPost }: { initialPost: Post }) {
       <div className="mb-4">
         <Paragraph content={post?.content} />
         <div className="flex flex-wrap">
-          {post?.tags?.map((t) => (
-            <Hashtag tag={t.value} keystring={post.id + "_" + t.value} />
+          {post?.tags?.map((t, ind) => (
+            <Hashtag tag={t.value} key={ind} keystring={post.id + "_" + t.value} />
           ))}
         </div>
       </div>
